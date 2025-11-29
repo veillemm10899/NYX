@@ -5,7 +5,7 @@
 A real-time chat application inspired by the cosmic river from *Unfriended 2*, where users communicate through the eternal darkness guided by Nyx, the Greek goddess of the night.
 
 ## 🌐 Go to Website
-Visit the live application: [veillemm.netlify.app](https://veillemm.netlify.app)
+Visit the live application: [nyxriver.netlify.app](https://nyxriver.netlify.app)
 
 ## 🌙 About NYX
 
