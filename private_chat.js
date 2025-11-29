@@ -684,13 +684,25 @@ class NyxPrivateChat {
     
     scrollToBottom() {
         setTimeout(() => {
+            // Desktop messages container
             if (this.messageContainer) {
                 this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
             }
+            // Mobile messages container
             if (this.mobileMessageContainer) {
                 this.mobileMessageContainer.scrollTop = this.mobileMessageContainer.scrollHeight;
             }
-        }, 100);
+            // Also try scrolling parent chat-container
+            const desktopChatContainer = document.querySelector('#desktop-layout .chat-container');
+            const mobileChatContainer = document.querySelector('#mobile-layout .chat-container');
+            
+            if (desktopChatContainer) {
+                desktopChatContainer.scrollTop = desktopChatContainer.scrollHeight;
+            }
+            if (mobileChatContainer) {
+                mobileChatContainer.scrollTop = mobileChatContainer.scrollHeight;
+            }
+        }, 200);
     }
     
     formatTime(timestamp) {
