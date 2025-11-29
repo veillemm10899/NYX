@@ -101,6 +101,27 @@
                 height: 40px;
                 justify-content: center;
             }
+            
+            .message-input-container {
+                position: sticky;
+                bottom: 0;
+                background: var(--secondary-dark);
+                z-index: 10;
+                padding: 16px;
+            }
+            
+            .messages {
+                padding-bottom: 100px;
+            }
+            
+            .message-input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .mobile-chat {
+                height: 100vh;
+                overflow: hidden;
+            }
         }
     </style>
 </head>
@@ -175,6 +196,10 @@
                         placeholder="Send private message..."
                         maxlength="500"
                         autocomplete="off"
+                        inputmode="text"
+                        spellcheck="false"
+                        autocorrect="off"
+                        autocapitalize="off"
                     />
                     <button id="send-btn" class="send-btn">
                         <i class="fas fa-paper-plane"></i>
@@ -262,6 +287,10 @@
                         placeholder="Send private message..."
                         maxlength="500"
                         autocomplete="off"
+                        inputmode="text"
+                        spellcheck="false"
+                        autocorrect="off"
+                        autocapitalize="off"
                     />
                     <button id="mobile-send-btn" class="send-btn">
                         <i class="fas fa-paper-plane"></i>

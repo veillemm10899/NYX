@@ -540,6 +540,8 @@ body {
     border-radius: 25px;
     padding: 8px;
     transition: all 0.3s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .input-wrapper:focus-within {
@@ -555,6 +557,9 @@ body {
     color: var(--text-primary);
     font-size: 1rem;
     padding: 8px 12px;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .message-input::placeholder {
@@ -741,14 +746,28 @@ body {
     
     .message-input-container {
         padding: 16px;
+        position: sticky;
+        bottom: 0;
+        background: var(--secondary-dark);
+        z-index: 10;
     }
     
     .messages {
         gap: 12px;
+        padding-bottom: 100px;
     }
     
     .message-content {
         padding: 10px 14px;
+    }
+    
+    .message-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    .mobile-chat {
+        height: 100vh;
+        overflow: hidden;
     }
 }
 
