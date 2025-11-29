@@ -123,11 +123,14 @@
                 height: calc(100vh - 140px);
                 overflow-y: auto;
                 padding: 16px;
+                scroll-behavior: smooth;
             }
             
             .messages {
-                padding-bottom: 20px;
+                padding-bottom: 100px; /* More space for input */
                 min-height: 100%;
+                display: flex;
+                flex-direction: column;
             }
             
             .message-input {
