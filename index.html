@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYX - The Cosmic River</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <div id="journey-container">
+        <canvas id="cosmic-river"></canvas>
+        <canvas id="star-tunnel"></canvas>
+        <canvas id="nebula-clouds"></canvas>
+        
+        <!-- Journey Elements -->
+        <div id="void-boat">
+            <div class="boat-hull"></div>
+            <div class="boat-passenger">
+                <div class="passenger-silhouette"></div>
+            </div>
+        </div>
+        
+        <!-- Cosmic Cavern -->
+        <div id="cosmic-cavern">
+            <div class="cavern-wall left"></div>
+            <div class="cavern-wall right"></div>
+            <div class="cavern-ceiling"></div>
+            <div class="cavern-depth"></div>
+        </div>
+        
+        <!-- Light Beams -->
+        <div id="light-beams">
+            <div class="light-beam beam1"></div>
+            <div class="light-beam beam2"></div>
+            <div class="light-beam beam3"></div>
+        </div>
+        
+        <!-- Floating Debris -->
+        <div id="cosmic-debris"></div>
+        
+        <!-- Connection Status -->
+        <div id="connection-status">
+            <div class="status-text">Establishing cosmic connection...</div>
+            <div class="proxy-count">
+                <span class="proxy-label">Proxies:</span>
+                <span class="proxy-number" id="proxy-count">0</span>
+                <span class="proxy-total">/2500</span>
+            </div>
+            <div class="connection-bars">
+                <div class="connection-bar"></div>
+                <div class="connection-bar"></div>
+                <div class="connection-bar"></div>
+                <div class="connection-bar"></div>
+                <div class="connection-bar"></div>
+            </div>
+        </div>
+        
+        <!-- Nyx Manifestation -->
+        <div id="nyx-appears">
+            <div class="nyx-eyes-journey">
+                <div class="journey-eye left"></div>
+                <div class="journey-eye right"></div>
+            </div>
+            <div class="nyx-form-journey"></div>
+        </div>
+        
+        <!-- Journey Messages -->
+        <div id="journey-messages">
+            <div class="journey-message" id="message1">Entering the eternal night...</div>
+            <div class="journey-message" id="message2">Crossing the cosmic river...</div>
+            <div class="journey-message" id="message3">The darkness welcomes you...</div>
+        </div>
+        
+        <!-- Enter Threshold -->
+        <div id="threshold-gate">
+            <button id="enter-nyx" class="threshold-btn">
+                <span class="btn-text">ENTER NYX</span>
+                <div class="btn-glow"></div>
+            </button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script src="simple_online_status.js"></script>
+</body>
+</html>

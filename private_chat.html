@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYX - Private Chat</title>
+    <link rel="stylesheet" href="chat.css" />
+    <link rel="stylesheet" href="cosmic_river_css.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Private Chat Specific Styles */
+        .private-chat-header {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            gap: 1rem;
+        }
+        
+        .back-to-public-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .back-to-public-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        
+        .chat-partner-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+        
+        .partner-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        
+        .partner-details {
+            flex: 1;
+        }
+        
+        .partner-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+        
+        .partner-status {
+            font-size: 0.9rem;
+            color: var(--success);
+            margin-top: 2px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .private-chat-header {
+                padding: 0.75rem;
+            }
+            
+            .partner-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+            }
+            
+            .partner-name {
+                font-size: 1rem;
+            }
+            
+            .back-to-public-btn span {
+                display: none;
+            }
+            
+            .back-to-public-btn {
+                padding: 0.5rem;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Desktop Layout -->
+    <div id="desktop-layout" class="layout-container">
+        <!-- Left Sidebar - Online Users -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="nyx-logo">
+                    <i class="fas fa-moon"></i>
+                    <span>NYX</span>
+                </div>
+                <div class="online-count">
+                    <span id="online-count">0</span>
+                    <span>Online</span>
+                </div>
+            </div>
+            
+            <div class="online-users-container">
+                <div class="section-title">Online Nyx</div>
+                <div id="online-users" class="online-users">
+                    <!-- Online users will be populated here -->
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button id="back-to-public-sidebar-btn" class="developer-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Public</span>
+                </button>
+                <button id="developer-btn" class="developer-btn">
+                    <i class="fas fa-code"></i>
+                    <span>Developer</span>
+                </button>
+                <button id="logout-btn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Leave River</span>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Chat Area -->
+        <main class="chat-main">
+            <!-- Private Chat Header -->
+            <div class="private-chat-header">
+                <button id="back-to-public-btn" class="back-to-public-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Public</span>
+                </button>
+                <div class="chat-partner-info">
+                    <div class="partner-avatar" id="partner-avatar">?</div>
+                    <div class="partner-details">
+                        <div class="partner-name" id="partner-name">User</div>
+                        <div class="partner-status" id="partner-status">Online</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div id="messages" class="messages">
+                    <!-- Messages will be populated here -->
+                </div>
+            </div>
+            
+            <div class="message-input-container">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="message-input" 
+                        class="message-input" 
+                        placeholder="Send private message..."
+                        maxlength="500"
+                        autocomplete="off"
+                    />
+                    <button id="send-btn" class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-info">
+                    <span id="char-count">0/500</span>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Mobile Layout -->
+    <div id="mobile-layout" class="layout-container mobile-hidden">
+        <!-- Mobile Drawer -->
+        <div id="mobile-drawer" class="mobile-drawer">
+            <div class="drawer-header">
+                <div class="nyx-logo">
+                    <i class="fas fa-moon"></i>
+                    <span>NYX</span>
+                </div>
+                <button id="close-drawer" class="close-drawer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="drawer-content">
+                <div class="online-count">
+                    <span id="mobile-online-count">0</span>
+                    <span>Online</span>
+                </div>
+                
+                <div class="section-title">Online Nyx</div>
+                <div id="mobile-online-users" class="online-users">
+                    <!-- Online users will be populated here -->
+                </div>
+                
+                <div class="drawer-actions">
+                    <button id="mobile-back-to-public-sidebar-btn" class="developer-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Public</span>
+                    </button>
+                    <button id="mobile-developer-btn" class="developer-btn">
+                        <i class="fas fa-code"></i>
+                        <span>Developer</span>
+                    </button>
+                    <button id="mobile-logout-btn" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Leave River</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Chat -->
+        <div class="mobile-chat">
+            <div class="mobile-chat-header">
+                <button id="open-drawer" class="menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="chat-partner-info">
+                    <div class="partner-avatar" id="mobile-partner-avatar">?</div>
+                    <div class="partner-details">
+                        <div class="partner-name" id="mobile-partner-name">User</div>
+                        <div class="partner-status" id="mobile-partner-status">Online</div>
+                    </div>
+                </div>
+                <button id="mobile-back-to-public-btn" class="back-to-public-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </div>
+            
+            <div class="chat-container">
+                <div id="mobile-messages" class="messages">
+                    <!-- Messages will be synced with desktop messages -->
+                </div>
+            </div>
+            
+            <div class="message-input-container">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="mobile-message-input" 
+                        class="message-input" 
+                        placeholder="Send private message..."
+                        maxlength="500"
+                        autocomplete="off"
+                    />
+                    <button id="mobile-send-btn" class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                </div>
+        </div>
+    </div>
+    
+    <!-- Profiles Modal -->
+    <div id="profiles-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Choose Nyx for Private Chat</h2>
+                <button id="close-profiles-modal" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="profiles-list" class="profiles-list">
+                    <!-- Profiles will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading profiles...</div>
+    </div>
+    
+    <script src="supabase-config.js"></script>
+    <script src="simple_online_status.js"></script>
+    <script src="private_chat.js"></script>
+</body>
+</html>

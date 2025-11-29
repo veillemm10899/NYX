@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYX - Enter the Void</title>
+    <link rel="stylesheet" href="login.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="login-container">
+        <canvas id="login-river"></canvas>
+        <canvas id="login-stars"></canvas>
+        <div id="login-void"></div>
+        
+        <!-- Nyx Presence -->
+        <div id="login-nyx">
+            <div class="login-eyes">
+                <div class="login-eye left"></div>
+                <div class="login-eye right"></div>
+            </div>
+            <div class="login-shadow"></div>
+        </div>
+        
+        <!-- Login Form -->
+        <div class="login-form-container">
+            <div class="form-header">
+                <h1 class="nyx-logo">NYX</h1>
+                <div class="nyx-subtitle">ENTER THE ETERNAL NIGHT</div>
+            </div>
+            
+            <form id="login-form" class="nyx-form">
+                <div class="input-group">
+                    <input type="email" id="login-email" placeholder="Email address" required />
+                    <div class="input-aura"></div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="password" id="login-password" placeholder="Password" required />
+                    <div class="input-aura"></div>
+                </div>
+                
+                <button type="submit" class="nyx-submit-btn">
+                    <span class="btn-text">ENTER VOID</span>
+                    <div class="btn-glow"></div>
+                </button>
+                
+                <div class="form-links">
+                    <a href="register.html" class="nyx-link">No account? Cross the threshold</a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Loading Overlay -->
+        <div id="login-loading" class="loading-overlay hidden">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Entering eternal night...</div>
+            <div class="loading-details">Connecting to the void...</div>
+        </div>
+    </div>
+    
+    <script src="supabase-config.js"></script>
+    <script src="login.js"></script>
+    <script src="simple_online_status.js"></script>
+</body>
+</html>

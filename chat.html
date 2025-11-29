@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYX - The Cosmic River</title>
+    <link rel="stylesheet" href="chat.css" />
+    <link rel="stylesheet" href="cosmic_river_css.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Desktop Layout -->
+    <div id="desktop-layout" class="layout-container">
+        <!-- Left Sidebar - Online Users -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="nyx-logo">
+                    <i class="fas fa-moon"></i>
+                    <span>NYX</span>
+                </div>
+                <div class="online-count">
+                    <span id="online-count">0</span>
+                    <span>Online</span>
+                </div>
+            </div>
+            
+            <div class="online-users-container">
+                <div class="section-title">Online Nyx</div>
+                <div id="online-users" class="online-users">
+                    <!-- Online users will be populated here -->
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="users.html" class="developer-btn">
+                    <i class="fas fa-comments"></i>
+                    <span>Private Chat</span>
+                </a>
+                <button id="developer-btn" class="developer-btn">
+                    <i class="fas fa-code"></i>
+                    <span>Developer</span>
+                </button>
+                <button id="logout-btn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Leave River</span>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Main Chat Area -->
+        <main class="chat-main">
+            <div class="chat-header">
+                <div class="room-info">
+                    <i class="fas fa-meteor"></i>
+                    <span>The Cosmic River</span>
+                </div>
+                <div class="chat-actions">
+                    <button id="toggle-sidebar" class="sidebar-toggle">
+                        <i class="fas fa-users"></i>
+                    </button>
+                    <button id="refresh-chat" class="sidebar-toggle" title="Refresh The Cosmic River">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div id="messages" class="messages">
+                    <!-- Messages will be populated here -->
+                </div>
+                
+                <div class="typing-indicator" id="typing-indicator">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span class="typing-text">Someone is typing...</span>
+                </div>
+            </div>
+            
+            <div class="message-input-container">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="message-input" 
+                        class="message-input" 
+                        placeholder="Cross into the river..."
+                        maxlength="500"
+                        autocomplete="off"
+                    />
+                    <button id="send-btn" class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-info">
+                    <span id="char-count">0/500</span>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Mobile Layout -->
+    <div id="mobile-layout" class="layout-container mobile-hidden">
+        <!-- Mobile Drawer -->
+        <div id="mobile-drawer" class="mobile-drawer">
+            <div class="drawer-header">
+                <div class="nyx-logo">
+                    <i class="fas fa-moon"></i>
+                    <span>NYX</span>
+                </div>
+                <button id="close-drawer" class="close-drawer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="drawer-content">
+                <div class="online-count">
+                    <span id="mobile-online-count">0</span>
+                    <span>Online</span>
+                </div>
+                
+                <div class="section-title">Online Nyx</div>
+                <div id="mobile-online-users" class="online-users">
+                    <!-- Online users will be populated here -->
+                </div>
+                
+                <div class="drawer-actions">
+                    <a href="users.html" class="developer-btn">
+                        <i class="fas fa-comments"></i>
+                        <span>Private Chat</span>
+                    </a>
+                    <button id="mobile-developer-btn" class="developer-btn">
+                        <i class="fas fa-code"></i>
+                        <span>Developer</span>
+                    </button>
+                    <button id="mobile-logout-btn" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Leave River</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Chat -->
+        <div class="mobile-chat">
+            <div class="mobile-chat-header">
+                <button id="open-drawer" class="menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="room-info">
+                    <i class="fas fa-meteor"></i>
+                    <span>The Cosmic River</span>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div id="mobile-messages" class="messages">
+                    <!-- Messages will be synced with desktop messages -->
+                </div>
+                
+                <div class="typing-indicator" id="mobile-typing-indicator">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span class="typing-text">Someone is typing...</span>
+                </div>
+            </div>
+            
+            <div class="message-input-container">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="mobile-message-input" 
+                        class="message-input" 
+                        placeholder="Cross into the river..."
+                        maxlength="500"
+                        autocomplete="off"
+                    />
+                    <button id="mobile-send-btn" class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                </div>
+        </div>
+    </div>
+    
+
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Entering the river...</div>
+    </div>
+    
+    <script src="supabase-config.js"></script>
+    <script src="simple_online_status.js"></script>
+    <script src="original_working_chat.js"></script>
+</body>
+</html>

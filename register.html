@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYX - Join Darkness</title>
+    <link rel="stylesheet" href="login.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="register-container">
+        <canvas id="register-river"></canvas>
+        <canvas id="register-stars"></canvas>
+        <div id="register-void"></div>
+        
+        <!-- Nyx Presence -->
+        <div id="register-nyx">
+            <div class="register-eyes">
+                <div class="register-eye left"></div>
+                <div class="register-eye right"></div>
+            </div>
+            <div class="register-shadow"></div>
+        </div>
+        
+        <!-- Register Form -->
+        <div class="register-form-container">
+            <div class="form-header">
+                <h1 class="nyx-logo">NYX</h1>
+                <div class="nyx-subtitle">JOIN THE PRIMORDIAL DARKNESS</div>
+            </div>
+            
+            <form id="register-form" class="nyx-form">
+                <div class="input-group">
+                    <input type="text" id="full-name" placeholder="Full name" required />
+                    <div class="input-aura"></div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="email" id="register-email" placeholder="Email address" required />
+                    <div class="input-aura"></div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="password" id="register-password" placeholder="Create password" required />
+                    <div class="input-aura"></div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="password" id="confirm-password" placeholder="Confirm password" required />
+                    <div class="input-aura"></div>
+                </div>
+                
+                <button type="submit" class="nyx-submit-btn">
+                    <span class="btn-text">CROSS THE THRESHOLD</span>
+                    <div class="btn-glow"></div>
+                </button>
+                
+                <div class="form-links">
+                    <a href="login.html" class="nyx-link">Already in darkness? Return</a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Loading Overlay -->
+        <div id="register-loading" class="loading-overlay hidden">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Joining eternal night...</div>
+            <div class="loading-details">Creating your Nyx identity...</div>
+        </div>
+    </div>
+    
+    <script src="supabase-config.js"></script>
+    <script src="register.js"></script>
+</body>
+</html>

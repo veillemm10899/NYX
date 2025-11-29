@@ -1,0 +1,441 @@
+/* THE COSMIC RIVER - Enhanced with River Flow and Particle Effects */
+/* ... (keep all existing CSS from chat.css) ... */
+
+/* ======================================== */
+/* RIVER FLOW AND PARTICLE EFFECTS */
+/* ======================================== */
+
+#river-effects-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+}
+
+/* Enhanced Message Animations */
+.message.river-flow {
+    animation: riverFlowIn 0.8s ease-out;
+}
+
+.message.river-join {
+    animation: riverJoinIn 1s ease-out;
+}
+
+.message.river-leave {
+    animation: riverLeaveOut 1s ease-out;
+}
+
+.message.river-system {
+    animation: riverSystemPulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes riverFlowIn {
+    0% {
+        opacity: 0;
+        transform: translateX(-50px) translateY(20px) scale(0.8);
+    }
+    50% {
+        opacity: 0.7;
+        transform: translateX(10px) translateY(-5px) scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) translateY(0) scale(1);
+    }
+}
+
+@keyframes riverJoinIn {
+    0% {
+        opacity: 0;
+        transform: scale(0) rotate(180deg);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.1) rotate(90deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+@keyframes riverLeaveOut {
+    0% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.8) translateY(-30px);
+    }
+}
+
+@keyframes riverSystemPulse {
+    0% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+
+/* Enhanced Message Content */
+.message-content {
+    position: relative;
+    overflow: hidden;
+}
+
+.message-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(138, 43, 226, 0.1), 
+        transparent);
+    animation: riverShimmer 3s infinite;
+}
+
+@keyframes riverShimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Enhanced User Avatars */
+.user-avatar, .message-avatar {
+    position: relative;
+    background: linear-gradient(135deg, var(--nyx-purple), var(--nyx-violet));
+    box-shadow: 
+        0 0 20px rgba(138, 43, 226, 0.3),
+        inset 0 0 10px rgba(255, 255, 255, 0.1);
+    animation: avatarFloat 4s ease-in-out infinite;
+}
+
+.user-avatar::after, .message-avatar::after {
+    background: var(--success);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    animation: avatarPulse 2s ease-in-out infinite;
+}
+
+@keyframes avatarFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+@keyframes avatarPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* Enhanced Online Users */
+.online-user {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, 
+        rgba(138, 43, 226, 0.1) 0%, 
+        rgba(75, 0, 130, 0.2) 50%, 
+        rgba(20, 0, 40, 0.1) 100%);
+    border: 1px solid rgba(138, 43, 226, 0.2);
+    animation: userCardFlow 5s ease-in-out infinite;
+}
+
+.online-user::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(138, 43, 226, 0.1), 
+        transparent);
+    animation: userCardShimmer 4s infinite;
+}
+
+@keyframes userCardFlow {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(3px);
+    }
+}
+
+@keyframes userCardShimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Enhanced Input Field */
+.message-input {
+    background: transparent;
+    position: relative;
+}
+
+.message-input:focus {
+    box-shadow: 
+        0 0 20px rgba(138, 43, 226, 0.2),
+        inset 0 0 20px rgba(138, 43, 226, 0.05);
+}
+
+.input-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.input-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+        transparent 30%, 
+        rgba(138, 43, 226, 0.05) 50%, 
+        transparent 70%);
+    animation: inputFlow 8s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes inputFlow {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Enhanced Send Button */
+.send-btn {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--nyx-purple), var(--nyx-violet));
+    transition: all 0.3s;
+}
+
+.send-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.2), 
+        transparent);
+    transition: left 0.5s;
+}
+
+.send-btn:hover::before {
+    left: 100%;
+}
+
+.send-btn:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
+}
+
+/* Enhanced Typing Indicator */
+.typing-indicator {
+    background: linear-gradient(135deg, 
+        rgba(138, 43, 226, 0.1) 0%, 
+        rgba(75, 0, 130, 0.2) 100%);
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    border-radius: 20px;
+    padding: 12px 20px;
+    animation: typingFlow 2s ease-in-out infinite;
+}
+
+@keyframes typingFlow {
+    0%, 100% {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+
+/* Enhanced Sidebar */
+.sidebar {
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 90% 80%, rgba(75, 0, 130, 0.05) 0%, transparent 50%);
+    animation: sidebarFlow 10s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes sidebarFlow {
+    0% {
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 0.3;
+    }
+}
+
+/* Enhanced Chat Container */
+.chat-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.chat-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 30% 20%, rgba(138, 43, 226, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(75, 0, 130, 0.03) 0%, transparent 50%);
+    animation: containerFlow 15s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes containerFlow {
+    0%, 100% {
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Mobile Enhancements */
+@media (max-width: 768px) {
+    .mobile-drawer {
+        background: linear-gradient(180deg, 
+            var(--primary-dark) 0%, 
+            var(--secondary-dark) 50%, 
+            var(--accent-dark) 100%);
+        box-shadow: 2px 0 20px rgba(138, 43, 226, 0.3);
+    }
+    
+    .mobile-chat {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .mobile-chat::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(75, 0, 130, 0.05) 0%, transparent 50%);
+        animation: mobileFlow 12s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 0;
+    }
+}
+
+@keyframes mobileFlow {
+    0%, 100% {
+        opacity: 0.2;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Particle Effect Styles */
+.particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 50%;
+}
+
+.particle.message {
+    box-shadow: 0 0 10px currentColor;
+}
+
+.particle.send {
+    animation: particleSend 1s ease-out forwards;
+}
+
+@keyframes particleSend {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(3) rotate(180deg);
+        opacity: 0;
+    }
+}
+
+/* Enhanced Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: linear-gradient(180deg, 
+        var(--primary-dark) 0%, 
+        var(--secondary-dark) 100%);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--nyx-purple), var(--nyx-violet));
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--nyx-violet), var(--nyx-purple));
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+}

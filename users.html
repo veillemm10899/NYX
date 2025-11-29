@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYX - Choose Chat Partner</title>
+    <link rel="stylesheet" href="chat.css" />
+    <link rel="stylesheet" href="cosmic_river_css.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Users Page Styles */
+        .users-container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .users-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .users-header h1 {
+            color: var(--text-primary);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .users-header p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+        
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .user-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.3);
+            border-color: var(--primary-color);
+        }
+        
+        .user-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: relative;
+        }
+        
+        .user-avatar.online {
+            background: linear-gradient(135deg, var(--success), #00a865);
+        }
+        
+        .user-avatar.offline {
+            background: linear-gradient(135deg, var(--text-dim), #666);
+        }
+        
+        .user-avatar::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            right: 3px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 3px solid var(--bg-secondary);
+        }
+        
+        .user-avatar.online::after {
+            background: var(--success);
+        }
+        
+        .user-avatar.offline::after {
+            background: var(--text-dim);
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .user-number {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .user-status {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .user-status.online {
+            background: rgba(0, 200, 101, 0.2);
+            color: var(--success);
+        }
+        
+        .user-status.offline {
+            background: rgba(108, 117, 125, 0.2);
+            color: var(--text-dim);
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+        
+        .back-button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .users-container {
+                padding: 1rem;
+            }
+            
+            .users-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .user-card {
+                padding: 1rem;
+            }
+            
+            .user-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 1rem;
+            }
+            
+            .user-name {
+                font-size: 1.1rem;
+            }
+            
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <a href="chat.html" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Chat</span>
+    </a>
+    
+    <!-- Users Container -->
+    <div class="users-container">
+        <div class="users-header">
+            <h1>Choose Nyx to Chat</h1>
+            <p>Select someone to start a private conversation</p>
+        </div>
+        
+        <div id="users-grid" class="users-grid">
+            <!-- Users will be populated here -->
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading users...</div>
+    </div>
+    
+    <script src="supabase-config.js"></script>
+    <script src="users_page.js"></script>
+</body>
+</html>
