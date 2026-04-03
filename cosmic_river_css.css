@@ -1,8 +1,11 @@
-/* THE COSMIC RIVER - Enhanced with River Flow and Particle Effects */
-/* ... (keep all existing CSS from chat.css) ... */
+/* THE COSMIC RIVER - Enhanced with Mobile Optimizations */
+
+:root {
+    --particle-color: rgba(138, 43, 226, 0.3);
+}
 
 /* ======================================== */
-/* RIVER FLOW AND PARTICLE EFFECTS */
+/* RIVER FLOW AND PARTICLE EFFECTS - LIGHTWEIGHT */
 /* ======================================== */
 
 #river-effects-canvas {
@@ -13,381 +16,139 @@
     height: 100%;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
-/* Enhanced Message Animations */
+/* Message Animations - Reduced for mobile */
 .message.river-flow {
-    animation: riverFlowIn 0.8s ease-out;
+    animation: riverFlowIn 0.4s ease-out;
 }
 
-.message.river-join {
-    animation: riverJoinIn 1s ease-out;
-}
-
-.message.river-leave {
-    animation: riverLeaveOut 1s ease-out;
-}
-
+.message.river-join,
+.message.river-leave,
 .message.river-system {
-    animation: riverSystemPulse 1.5s ease-in-out infinite alternate;
+    animation: simpleFade 0.3s ease-out;
 }
 
 @keyframes riverFlowIn {
     0% {
         opacity: 0;
-        transform: translateX(-50px) translateY(20px) scale(0.8);
-    }
-    50% {
-        opacity: 0.7;
-        transform: translateX(10px) translateY(-5px) scale(1.02);
+        transform: translateY(10px);
     }
     100% {
         opacity: 1;
-        transform: translateX(0) translateY(0) scale(1);
+        transform: translateY(0);
     }
 }
 
-@keyframes riverJoinIn {
-    0% {
-        opacity: 0;
-        transform: scale(0) rotate(180deg);
-    }
-    50% {
-        opacity: 0.8;
-        transform: scale(1.1) rotate(90deg);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-    }
+@keyframes simpleFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-@keyframes riverLeaveOut {
-    0% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-    100% {
-        opacity: 0;
-        transform: scale(0.8) translateY(-30px);
-    }
-}
-
-@keyframes riverSystemPulse {
-    0% {
-        opacity: 0.6;
-        transform: scale(1);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1.02);
-    }
-}
-
-/* Enhanced Message Content */
-.message-content {
-    position: relative;
-    overflow: hidden;
-}
-
+/* Shimmer Effect - Reduced opacity for mobile */
 .message-content::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(138, 43, 226, 0.1), 
-        transparent);
-    animation: riverShimmer 3s infinite;
-}
-
-@keyframes riverShimmer {
-    0% {
-        left: -100%;
-    }
-    100% {
-        left: 100%;
-    }
+    display: none;
 }
 
 /* Enhanced User Avatars */
 .user-avatar, .message-avatar {
-    position: relative;
     background: linear-gradient(135deg, var(--nyx-purple), var(--nyx-violet));
-    box-shadow: 
-        0 0 20px rgba(138, 43, 226, 0.3),
-        inset 0 0 10px rgba(255, 255, 255, 0.1);
-    animation: avatarFloat 4s ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.25);
 }
 
 .user-avatar::after, .message-avatar::after {
     background: var(--success);
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-    animation: avatarPulse 2s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
 }
 
-@keyframes avatarFloat {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-3px);
-    }
-}
-
-@keyframes avatarPulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.1);
-        opacity: 0.8;
-    }
-}
-
-/* Enhanced Online Users */
+/* Online User Cards - Simplified */
 .online-user {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(135deg, 
-        rgba(138, 43, 226, 0.1) 0%, 
-        rgba(75, 0, 130, 0.2) 50%, 
-        rgba(20, 0, 40, 0.1) 100%);
-    border: 1px solid rgba(138, 43, 226, 0.2);
-    animation: userCardFlow 5s ease-in-out infinite;
+    background: rgba(138, 43, 226, 0.06);
+    border: 1px solid rgba(138, 43, 226, 0.12);
 }
 
 .online-user::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(138, 43, 226, 0.1), 
-        transparent);
-    animation: userCardShimmer 4s infinite;
+    display: none;
 }
 
-@keyframes userCardFlow {
-    0%, 100% {
-        transform: translateX(0);
-    }
-    50% {
-        transform: translateX(3px);
-    }
-}
-
-@keyframes userCardShimmer {
-    0% {
-        left: -100%;
-    }
-    100% {
-        left: 100%;
-    }
+.online-user:hover {
+    background: rgba(138, 43, 226, 0.1);
+    border-color: rgba(138, 43, 226, 0.25);
+    transform: translateX(3px);
 }
 
 /* Enhanced Input Field */
-.message-input {
-    background: transparent;
-    position: relative;
-}
-
 .message-input:focus {
-    box-shadow: 
-        0 0 20px rgba(138, 43, 226, 0.2),
-        inset 0 0 20px rgba(138, 43, 226, 0.05);
-}
-
-.input-wrapper {
-    position: relative;
-    overflow: hidden;
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.15);
 }
 
 .input-wrapper::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, 
-        transparent 30%, 
-        rgba(138, 43, 226, 0.05) 50%, 
-        transparent 70%);
-    animation: inputFlow 8s linear infinite;
-    pointer-events: none;
+    display: none;
 }
 
-@keyframes inputFlow {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
-}
-
-/* Enhanced Send Button */
+/* Send Button - Simplified hover */
 .send-btn {
-    position: relative;
-    overflow: hidden;
     background: linear-gradient(135deg, var(--nyx-purple), var(--nyx-violet));
-    transition: all 0.3s;
 }
 
 .send-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.2), 
-        transparent);
-    transition: left 0.5s;
-}
-
-.send-btn:hover::before {
-    left: 100%;
+    display: none;
 }
 
 .send-btn:hover {
-    transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
 }
 
-/* Enhanced Typing Indicator */
+.send-btn:active {
+    transform: scale(0.92);
+}
+
+/* Typing Indicator - Simplified */
 .typing-indicator {
-    background: linear-gradient(135deg, 
-        rgba(138, 43, 226, 0.1) 0%, 
-        rgba(75, 0, 130, 0.2) 100%);
-    border: 1px solid rgba(138, 43, 226, 0.3);
+    background: rgba(138, 43, 226, 0.08);
+    border: 1px solid rgba(138, 43, 226, 0.2);
     border-radius: 20px;
-    padding: 12px 20px;
-    animation: typingFlow 2s ease-in-out infinite;
+    padding: 10px 16px;
 }
 
-@keyframes typingFlow {
-    0%, 100% {
-        opacity: 0.7;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.02);
-    }
+.typing-dots span {
+    background: var(--nyx-purple);
 }
 
-/* Enhanced Sidebar */
-.sidebar {
-    position: relative;
-    overflow: hidden;
-}
-
+/* Sidebar - Simplified background */
 .sidebar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 90% 80%, rgba(75, 0, 130, 0.05) 0%, transparent 50%);
-    animation: sidebarFlow 10s linear infinite;
-    pointer-events: none;
-    z-index: 1;
+    display: none;
 }
 
-@keyframes sidebarFlow {
-    0% {
-        opacity: 0.3;
-    }
-    50% {
-        opacity: 0.6;
-    }
-    100% {
-        opacity: 0.3;
-    }
-}
-
-/* Enhanced Chat Container */
-.chat-container {
-    position: relative;
-    overflow: hidden;
-}
-
+/* Chat Container - Subtle background only */
 .chat-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 30% 20%, rgba(138, 43, 226, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 70% 80%, rgba(75, 0, 130, 0.03) 0%, transparent 50%);
-    animation: containerFlow 15s ease-in-out infinite;
-    pointer-events: none;
-    z-index: 0;
-}
-
-@keyframes containerFlow {
-    0%, 100% {
-        opacity: 0.3;
-    }
-    50% {
-        opacity: 0.6;
-    }
+    display: none;
 }
 
 /* Mobile Enhancements */
 @media (max-width: 768px) {
+    #river-effects-canvas {
+        opacity: 0.3;
+    }
+    
     .mobile-drawer {
         background: linear-gradient(180deg, 
             var(--primary-dark) 0%, 
-            var(--secondary-dark) 50%, 
-            var(--accent-dark) 100%);
-        box-shadow: 2px 0 20px rgba(138, 43, 226, 0.3);
-    }
-    
-    .mobile-chat {
-        position: relative;
-        overflow: hidden;
+            var(--secondary-dark) 100%);
     }
     
     .mobile-chat::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: 
-            radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(75, 0, 130, 0.05) 0%, transparent 50%);
-        animation: mobileFlow 12s ease-in-out infinite;
-        pointer-events: none;
-        z-index: 0;
+        display: none;
     }
-}
-
-@keyframes mobileFlow {
-    0%, 100% {
-        opacity: 0.2;
+    
+    .send-btn {
+        box-shadow: 0 2px 10px rgba(138, 43, 226, 0.3);
     }
-    50% {
-        opacity: 0.5;
+    
+    .send-btn:active {
+        box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
     }
 }
 
@@ -400,11 +161,11 @@
 }
 
 .particle.message {
-    box-shadow: 0 0 10px currentColor;
+    box-shadow: 0 0 8px currentColor;
 }
 
 .particle.send {
-    animation: particleSend 1s ease-out forwards;
+    animation: particleSend 0.6s ease-out forwards;
 }
 
 @keyframes particleSend {
@@ -413,29 +174,26 @@
         opacity: 1;
     }
     100% {
-        transform: scale(3) rotate(180deg);
+        transform: scale(2) rotate(90deg);
         opacity: 0;
     }
 }
 
-/* Enhanced Scrollbar */
+/* Enhanced Scrollbar - Thin for mobile */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 4px;
+    height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-    background: linear-gradient(180deg, 
-        var(--primary-dark) 0%, 
-        var(--secondary-dark) 100%);
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, var(--nyx-purple), var(--nyx-violet));
-    border-radius: 4px;
-    box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+    background: rgba(138, 43, 226, 0.25);
+    border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, var(--nyx-violet), var(--nyx-purple));
-    box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+    background: rgba(138, 43, 226, 0.4);
 }

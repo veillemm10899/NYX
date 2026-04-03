@@ -3,14 +3,17 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
     height: 100%;
     overflow: hidden;
     background: #000;
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     color: #fff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* --- CONTAINERS --- */
@@ -25,6 +28,12 @@ html, body {
         #0a0515 30%, 
         #1a0a2e 60%, 
         #16213e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    padding-top: env(safe-area-inset-top, 20px);
+    padding-bottom: env(safe-area-inset-bottom, 20px);
 }
 
 /* --- CANVAS BACKGROUNDS --- */
@@ -130,21 +139,20 @@ html, body {
 
 /* --- FORM CONTAINERS --- */
 .login-form-container, .register-form-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
+    position: relative;
+    background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(138, 43, 226, 0.3);
-    border-radius: 20px;
-    padding: 40px 30px;
-    width: 90%;
-    max-width: 400px;
+    border-radius: 24px;
+    padding: 32px 24px;
+    width: 100%;
+    max-width: 380px;
     z-index: 7;
     box-shadow: 
         0 20px 60px rgba(0, 0, 0, 0.5),
-        0 0 100px rgba(138, 43, 226, 0.1);
+        0 0 80px rgba(138, 43, 226, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .form-header {
@@ -182,7 +190,7 @@ html, body {
 .nyx-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 }
 
 .input-group {
@@ -191,26 +199,27 @@ html, body {
 
 .input-group input {
     width: 100%;
-    padding: 15px 20px;
+    padding: 14px 18px;
     background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(138, 43, 226, 0.3);
-    border-radius: 10px;
+    border: 1px solid rgba(138, 43, 226, 0.25);
+    border-radius: 14px;
     color: #fff;
     font-size: 16px;
     outline: none;
-    transition: all 0.3s;
+    transition: all 0.25s;
     position: relative;
     z-index: 2;
+    -webkit-appearance: none;
 }
 
 .input-group input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.35);
 }
 
 .input-group input:focus {
     border-color: #8A2BE2;
     background: rgba(0, 0, 0, 0.8);
-    box-shadow: 0 0 20px rgba(138, 43, 226, 0.2);
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.15), inset 0 0 20px rgba(138, 43, 226, 0.05);
 }
 
 .input-aura {
@@ -235,28 +244,26 @@ html, body {
 /* --- BUTTONS --- */
 .nyx-submit-btn, .nyx-secondary-btn {
     position: relative;
-    padding: 15px 30px;
-    font-size: 14px;
-    letter-spacing: 0.2rem;
+    padding: 14px 24px;
+    font-size: 13px;
+    letter-spacing: 0.15rem;
     color: #fff;
     background: linear-gradient(135deg, 
-        rgba(138, 43, 226, 0.3) 0%, 
-        rgba(75, 0, 130, 0.4) 100%);
-    border: 2px solid rgba(138, 43, 226, 0.6);
-    border-radius: 10px;
+        rgba(138, 43, 226, 0.35) 0%, 
+        rgba(75, 0, 130, 0.45) 100%);
+    border: 1px solid rgba(138, 43, 226, 0.5);
+    border-radius: 14px;
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     text-transform: uppercase;
-    font-weight: 300;
-    margin-top: 10px;
+    font-weight: 500;
+    margin-top: 8px;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.nyx-secondary-btn {
-    background: linear-gradient(135deg, 
-        rgba(75, 0, 130, 0.2) 0%, 
-        rgba(20, 0, 40, 0.3) 100%);
-    border-color: rgba(75, 0, 130, 0.5);
+.nyx-submit-btn:active, .nyx-secondary-btn:active {
+    transform: scale(0.97);
 }
 
 .btn-text {
@@ -287,14 +294,9 @@ html, body {
     transform: translateY(-2px);
     border-color: #8A2BE2;
     box-shadow: 
-        0 10px 30px rgba(138, 43, 226, 0.3),
-        0 0 40px rgba(138, 43, 226, 0.2),
-        inset 0 0 20px rgba(138, 43, 226, 0.1);
-}
-
-.nyx-submit-btn:active,
-.nyx-secondary-btn:active {
-    transform: translateY(0);
+        0 8px 25px rgba(138, 43, 226, 0.25),
+        0 0 30px rgba(138, 43, 226, 0.15),
+        inset 0 0 15px rgba(138, 43, 226, 0.08);
 }
 
 /* --- FORM LINKS --- */

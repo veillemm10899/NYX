@@ -117,27 +117,29 @@ class SimpleCosmicRiver {
         const openDrawerBtn = document.getElementById('open-drawer');
         const closeDrawerBtn = document.getElementById('close-drawer');
         const mobileDrawer = document.getElementById('mobile-drawer');
+        const drawerBackdrop = document.getElementById('drawer-backdrop');
         
-        if (openDrawerBtn) {
+        if (openDrawerBtn && mobileDrawer) {
             openDrawerBtn.addEventListener('click', () => {
                 mobileDrawer.classList.add('open');
+                if (drawerBackdrop) drawerBackdrop.classList.add('active');
             });
         }
         
-        if (closeDrawerBtn) {
+        if (closeDrawerBtn && mobileDrawer) {
             closeDrawerBtn.addEventListener('click', () => {
                 mobileDrawer.classList.remove('open');
+                if (drawerBackdrop) drawerBackdrop.classList.remove('active');
             });
         }
         
-        // Close drawer when clicking outside
-        document.addEventListener('click', (e) => {
-            if (mobileDrawer && mobileDrawer.classList.contains('open') && 
-                !mobileDrawer.contains(e.target) && 
-                !openDrawerBtn.contains(e.target)) {
+        // Close drawer when clicking backdrop
+        if (drawerBackdrop) {
+            drawerBackdrop.addEventListener('click', () => {
                 mobileDrawer.classList.remove('open');
-            }
-        });
+                drawerBackdrop.classList.remove('active');
+            });
+        }
     }
     
     async loadUserProfile() {
