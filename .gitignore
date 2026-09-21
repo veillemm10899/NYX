@@ -1,0 +1,8 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Stale echoblades game snapshots (separate projects, not part of the chat app)
+echoblades/
+developer/echoblades/

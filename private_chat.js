@@ -85,6 +85,7 @@ class NyxPrivateChat {
         this.sendButton = document.getElementById('send-btn');
         this.profilesModal = document.getElementById('profiles-modal');
         this.profilesList = document.getElementById('profiles-list');
+        this.scrollToBottomBtn = document.getElementById('scroll-bottom');
         
         // Mobile elements
         this.mobileMessageContainer = document.getElementById('mobile-messages');
@@ -112,6 +113,20 @@ class NyxPrivateChat {
                     e.preventDefault();
                     this.sendMessage(true);
                 }
+            });
+        }
+
+        // Char counters
+        const desktopCounter = document.getElementById('char-count');
+        if (this.messageInput && desktopCounter) {
+            this.messageInput.addEventListener('input', () => {
+                desktopCounter.textContent = this.messageInput.value.length + '/500';
+            });
+        }
+        const mobileCounter = document.getElementById('mobile-char-count');
+        if (this.mobileMessageInput && mobileCounter) {
+            this.mobileMessageInput.addEventListener('input', () => {
+                mobileCounter.textContent = this.mobileMessageInput.value.length + '/500';
             });
         }
         
@@ -170,6 +185,26 @@ class NyxPrivateChat {
                 window.open('https://veillemm.netlify.app', '_blank');
             });
         });
+
+        // Scroll to bottom button
+        if (this.scrollToBottomBtn) {
+            this.scrollToBottomBtn.addEventListener('click', () => this.scrollToBottom());
+        }
+        [this.messageContainer, this.mobileMessageContainer]
+            .filter(Boolean)
+            .forEach((el) => el.addEventListener('scroll', () => {
+                if (this.scrollToBottomBtn) {
+                    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 300;
+                    this.scrollToBottomBtn.classList.toggle('visible', !nearBottom);
+                }
+            }));
+    }
+
+    updateScrollButton() {
+        const el = this.messageContainer;
+        if (!el || !this.scrollToBottomBtn) return;
+        const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 300;
+        this.scrollToBottomBtn.classList.toggle('visible', !nearBottom);
     }
     
     async loadUserProfile() {
@@ -275,16 +310,17 @@ class NyxPrivateChat {
             profileElement.className = 'profile-item';
             
             const isOnline = this.onlineUsers.some(online => online.id === user.id);
+            const grad = this.avatarGradient(user.id || user.nyx_name);
             
             profileElement.innerHTML = `
-                <div class="profile-avatar ${isOnline ? 'online' : 'offline'}">
+                <div class="profile-avatar ${isOnline ? 'online' : 'offline'}" style="background:${grad}">
                     ${user.nyx_name.replace('Nyx ', '')}
                 </div>
                 <div class="profile-info">
                     <div class="profile-name">${user.nyx_name}</div>
                     <div class="profile-number">Nyx #${user.nyx_number}</div>
                     <div class="profile-status ${isOnline ? 'online' : 'offline'}">
-                        ${isOnline ? '🟢 Online' : '⚫ Offline'}
+                        ${isOnline ? 'Online now' : 'Offline'}
                     </div>
                 </div>
             `;
@@ -312,11 +348,12 @@ class NyxPrivateChat {
             userElement.className = 'online-user';
             
             const avatarText = user.nyx_name.replace('Nyx ', '');
+            const grad = this.avatarGradient(user.id || user.nyx_name);
             userElement.innerHTML = `
-                <div class="user-avatar">${avatarText}</div>
+                <div class="user-avatar" style="background:${grad}">${avatarText}</div>
                 <div class="user-info">
                     <div class="user-name">${user.nyx_name}</div>
-                    <div class="user-status">Crossing the cosmic river</div>
+                    <div class="user-status">Drifting in the river</div>
                 </div>
             `;
             
@@ -386,6 +423,7 @@ class NyxPrivateChat {
         
         // Get avatar text from nyx_name
         const avatarText = user.nyx_name.replace('Nyx ', '').substring(0, 2).toUpperCase();
+        const grad = this.avatarGradient(user.id || user.nyx_name);
         
         // Update desktop
         const partnerAvatar = document.getElementById('partner-avatar');
@@ -394,6 +432,7 @@ class NyxPrivateChat {
         
         if (partnerAvatar) {
             partnerAvatar.textContent = avatarText;
+            partnerAvatar.style.background = grad;
         }
         if (partnerName) {
             partnerName.textContent = user.nyx_name;
@@ -410,6 +449,7 @@ class NyxPrivateChat {
         
         if (mobilePartnerAvatar) {
             mobilePartnerAvatar.textContent = avatarText;
+            mobilePartnerAvatar.style.background = grad;
         }
         if (mobilePartnerName) {
             mobilePartnerName.textContent = user.nyx_name;
@@ -454,10 +494,18 @@ class NyxPrivateChat {
         if (this.mobileMessageContainer) {
             this.mobileMessageContainer.innerHTML = '';
         }
-        
-        this.messages.forEach(message => {
-            this.renderMessage(message);
-        });
+
+        if (!this.messages.length) {
+            const empty = '<div class="chat-empty"><div class="chat-empty-mark"><i class="fas fa-feather-alt"></i></div><p class="chat-empty-title">No whispers yet</p><p class="chat-empty-sub">Say something to break the silence.</p></div>';
+            this.messageContainer.innerHTML = empty;
+            if (this.mobileMessageContainer) {
+                this.mobileMessageContainer.innerHTML = empty;
+            }
+        } else {
+            this.messages.forEach(message => {
+                this.renderMessage(message);
+            });
+        }
         
         this.scrollToBottom();
     }
@@ -481,6 +529,8 @@ class NyxPrivateChat {
         messageDiv.className = isOwnMessage ? 'message own-message' : 'message other-message';
         
         const avatarText = message.sender_nyx_name.replace('Nyx ', '');
+        const grad = this.avatarGradient(message.sender_id);
+        const senderColor = 'hsl(' + this.stringHue(message.sender_id) + ' 70% 78%)';
         
         if (isOwnMessage) {
             messageDiv.innerHTML = `
@@ -488,14 +538,14 @@ class NyxPrivateChat {
                     <div class="message-text">${this.escapeHtml(message.message)}</div>
                     <div class="message-time">${this.formatTime(message.created_at)}</div>
                 </div>
-                <div class="message-avatar">${avatarText}</div>
+                <div class="message-avatar" style="background:${grad}">${avatarText}</div>
             `;
         } else {
             messageDiv.innerHTML = `
-                <div class="message-avatar">${avatarText}</div>
+                <div class="message-avatar" style="background:${grad}">${avatarText}</div>
                 <div class="message-content">
                     <div class="message-header">
-                        <span class="message-sender">${message.sender_nyx_name}</span>
+                        <span class="message-sender" style="color:${senderColor}">${message.sender_nyx_name}</span>
                         <span class="message-time">${this.formatTime(message.created_at)}</span>
                     </div>
                     <div class="message-text">${this.escapeHtml(message.message)}</div>
@@ -702,9 +752,26 @@ class NyxPrivateChat {
             if (mobileChatContainer) {
                 mobileChatContainer.scrollTop = mobileChatContainer.scrollHeight;
             }
+            if (this.scrollToBottomBtn) {
+                this.scrollToBottomBtn.classList.remove('visible');
+            }
         }, 200);
     }
     
+    stringHue(key) {
+        let h = 2167;
+        const str = String(key || 'nyx');
+        for (let i = 0; i < str.length; i++) {
+            h = (h * 31 + str.charCodeAt(i)) >>> 0;
+        }
+        return h % 360;
+    }
+
+    avatarGradient(key) {
+        const h = this.stringHue(key);
+        return 'linear-gradient(135deg, hsl(' + h + ' 70% 62%), hsl(' + ((h + 45) % 360) + ' 72% 48%))';
+    }
+
     formatTime(timestamp) {
         const date = new Date(timestamp);
         return date.toLocaleTimeString('en-US', { 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="theme-color" content="#0a0515" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -12,14 +12,20 @@
     <link rel="icon" type="image/webp" href="developer/logo.webp" />
     <link rel="apple-touch-icon" href="developer/logo.webp" />
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="chat.css" />
-    <link rel="stylesheet" href="cosmic_river_css.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- Desktop Layout -->
     <div id="desktop-layout" class="layout-container">
+        <!-- The Weather (activity-driven ambience) -->
+        <div class="weather-layer weather-0" aria-hidden="true"></div>
+
         <!-- Left Sidebar - Online Users -->
         <aside id="sidebar" class="sidebar">
             <div class="sidebar-header">
@@ -41,6 +47,10 @@
             </div>
             
             <div class="sidebar-footer">
+                <a href="game.html" class="developer-btn">
+                    <i class="fas fa-ghost"></i>
+                    <span>The Flight</span>
+                </a>
                 <a href="users.html" class="developer-btn">
                     <i class="fas fa-comments"></i>
                     <span>Private Chat</span>
@@ -64,6 +74,10 @@
                     <span>The Cosmic River</span>
                 </div>
                 <div class="chat-actions">
+                    <span class="weather-chip weather-0" id="weather-chip" title="River activity">
+                        <span class="weather-chip-dot"></span>
+                        <span class="weather-label" id="weather-label">Calm</span>
+                    </span>
                     <button id="toggle-sidebar" class="sidebar-toggle">
                         <i class="fas fa-users"></i>
                     </button>
@@ -72,6 +86,9 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Themed Rivers (rooms) -->
+            <div class="room-bar" id="room-bar"></div>
             
             <div class="chat-container">
                 <div id="messages" class="messages">
@@ -112,9 +129,20 @@
             </div>
         </main>
     </div>
+
+    <!-- Presence toasts (join/leave, auto-dismissing) -->
+    <div id="presence-toast" class="presence-toast"></div>
+
+    <!-- Scroll to bottom -->
+    <button id="scroll-bottom" class="scroll-bottom-btn" aria-label="Scroll to bottom">
+        <i class="fas fa-arrow-down"></i>
+    </button>
     
     <!-- Mobile Layout -->
     <div id="mobile-layout" class="layout-container mobile-hidden">
+        <!-- The Weather (activity-driven ambience) -->
+        <div class="weather-layer weather-0" aria-hidden="true"></div>
+
         <!-- Drawer Backdrop -->
         <div id="drawer-backdrop" class="drawer-backdrop"></div>
         
@@ -142,6 +170,10 @@
                 </div>
                 
                 <div class="drawer-actions">
+                    <a href="game.html" class="developer-btn">
+                        <i class="fas fa-ghost"></i>
+                        <span>The Flight</span>
+                    </a>
                     <a href="users.html" class="developer-btn">
                         <i class="fas fa-comments"></i>
                         <span>Private Chat</span>
@@ -168,10 +200,17 @@
                     <i class="fas fa-meteor"></i>
                     <span>The Cosmic River</span>
                 </div>
-                <button id="refresh-chat" class="menu-btn" title="Refresh">
+                <span class="weather-chip weather-0" id="mobile-weather-chip" title="River activity">
+                    <span class="weather-chip-dot"></span>
+                    <span class="weather-label" id="mobile-weather-label">Calm</span>
+                </span>
+                <button id="mobile-refresh-chat" class="menu-btn" title="Refresh">
                     <i class="fas fa-sync-alt"></i>
                 </button>
             </div>
+
+            <!-- Themed Rivers (rooms) -->
+            <div class="room-bar" id="mobile-room-bar"></div>
             
             <div class="chat-container">
                 <div id="mobile-messages" class="messages">
@@ -205,6 +244,9 @@
                     <button id="mobile-send-btn" class="send-btn">
                         <i class="fas fa-paper-plane"></i>
                     </button>
+                </div>
+                <div class="input-info">
+                    <span id="mobile-char-count">0/500</span>
                 </div>
             </div>
         </div>

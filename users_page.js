@@ -111,10 +111,11 @@ class UsersPage {
                          (user.is_online && user.last_seen > new Date(Date.now() - 5 * 60 * 1000).toISOString());
         
         const avatarText = user.nyx_name.replace('Nyx ', '').substring(0, 2).toUpperCase();
+        const grad = this.avatarGradient(user.id || user.nyx_name);
         
         card.innerHTML = `
             <div class="user-card-header">
-                <div class="user-avatar ${isOnline ? 'online' : 'offline'}">
+                <div class="user-avatar ${isOnline ? 'online' : 'offline'}" style="background:${grad}">
                     ${avatarText}
                 </div>
                 <div class="user-info">
@@ -123,7 +124,7 @@ class UsersPage {
                 </div>
             </div>
             <div class="user-status ${isOnline ? 'online' : 'offline'}">
-                ${isOnline ? '🟢 Online' : '⚫ Offline'}
+                ${isOnline ? 'Online now' : 'Offline'}
             </div>
         `;
         
@@ -133,6 +134,20 @@ class UsersPage {
         });
         
         return card;
+    }
+
+    stringHue(key) {
+        let h = 2167;
+        const str = String(key || 'nyx');
+        for (let i = 0; i < str.length; i++) {
+            h = (h * 31 + str.charCodeAt(i)) >>> 0;
+        }
+        return h % 360;
+    }
+
+    avatarGradient(key) {
+        const h = this.stringHue(key);
+        return 'linear-gradient(135deg, hsl(' + h + ' 70% 62%), hsl(' + ((h + 45) % 360) + ' 72% 48%))';
     }
     
     subscribeToProfileChanges() {

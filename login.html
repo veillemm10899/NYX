@@ -3,65 +3,59 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0515" />
+    <meta name="theme-color" content="#060411" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>NYX - Enter the Void</title>
+    <title>NYX — Log In</title>
+
+    <link rel="icon" type="image/webp" href="developer/logo.webp" />
+    <link rel="apple-touch-icon" href="developer/logo.webp" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="login.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div id="login-container">
-        <canvas id="login-river"></canvas>
-        <canvas id="login-stars"></canvas>
-        <div id="login-void"></div>
-        
-        <!-- Nyx Presence -->
-        <div id="login-nyx">
-            <div class="login-eyes">
-                <div class="login-eye left"></div>
-                <div class="login-eye right"></div>
+    <div class="space-dust"></div>
+
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <div class="auth-head">
+                <div class="brand-mark"><div class="moon-symbol"></div></div>
+                <h1 class="auth-title">NYX</h1>
+                <div class="auth-sub">Sign in</div>
             </div>
-            <div class="login-shadow"></div>
-        </div>
-        
-        <!-- Login Form -->
-        <div class="login-form-container">
-            <div class="form-header">
-                <h1 class="nyx-logo">NYX</h1>
-                <div class="nyx-subtitle">ENTER THE ETERNAL NIGHT</div>
-            </div>
-            
-            <form id="login-form" class="nyx-form">
-                <div class="input-group">
-                    <input type="email" id="login-email" placeholder="Email address" required />
-                    <div class="input-aura"></div>
+
+            <form id="login-form" class="auth-form" novalidate>
+                <div class="field">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" required />
                 </div>
-                
-                <div class="input-group">
-                    <input type="password" id="login-password" placeholder="Password" required />
-                    <div class="input-aura"></div>
+
+                <div class="field">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
                 </div>
-                
-                <button type="submit" class="nyx-submit-btn">
-                    <span class="btn-text">ENTER VOID</span>
-                    <div class="btn-glow"></div>
-                </button>
-                
+
+                <button type="submit" class="submit-btn">Log In</button>
+
                 <div class="form-links">
-                    <a href="register.html" class="nyx-link">No account? Cross the threshold</a>
+                    <a href="register.html" class="nyx-link">No account? Create one</a>
                 </div>
             </form>
         </div>
-        
-        <!-- Loading Overlay -->
-        <div id="login-loading" class="loading-overlay hidden">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Entering eternal night...</div>
-            <div class="loading-details">Connecting to the void...</div>
-        </div>
     </div>
-    
+
+    <!-- Loading Overlay -->
+    <div id="login-loading" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Signing you in...</div>
+        <div class="loading-details">Crossing into the river</div>
+    </div>
+
     <script src="supabase-config.js"></script>
     <script src="login.js"></script>
     <script src="simple_online_status.js"></script>

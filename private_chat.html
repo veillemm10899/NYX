@@ -2,165 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#060411" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>NYX - Private Chat</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/webp" href="developer/logo.webp" />
     <link rel="apple-touch-icon" href="developer/logo.webp" />
-    
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="chat.css" />
-    <link rel="stylesheet" href="cosmic_river_css.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Private Chat Specific Styles */
-        .private-chat-header {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            gap: 1rem;
-        }
-        
-        .back-to-public-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--primary-color);
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-        
-        .back-to-public-btn:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-        }
-        
-        .chat-partner-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex: 1;
-        }
-        
-        .partner-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-        
-        .partner-details {
-            flex: 1;
-        }
-        
-        .partner-name {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 1.1rem;
-        }
-        
-        .partner-status {
-            font-size: 0.9rem;
-            color: var(--success);
-            margin-top: 2px;
-        }
-        
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .private-chat-header {
-                padding: 0.75rem;
-            }
-            
-            .partner-avatar {
-                width: 40px;
-                height: 40px;
-                font-size: 0.9rem;
-            }
-            
-            .partner-name {
-                font-size: 1rem;
-            }
-            
-            .back-to-public-btn span {
-                display: none;
-            }
-            
-            .back-to-public-btn {
-                padding: 0.5rem;
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
-                justify-content: center;
-            }
-            
-            .message-input-container {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: var(--secondary-dark);
-                border-top: 1px solid rgba(138, 43, 226, 0.2);
-                z-index: 1000;
-                padding: 16px;
-                min-height: 80px;
-            }
-            
-            .chat-container {
-                height: calc(100vh - 140px);
-                overflow-y: auto;
-                padding: 16px;
-                scroll-behavior: smooth;
-            }
-            
-            .messages {
-                padding-bottom: 100px; /* More space for input */
-                min-height: 100%;
-                display: flex;
-                flex-direction: column;
-            }
-            
-            .message-input {
-                font-size: 16px; /* Prevents zoom on iOS */
-                padding: 12px 16px;
-                min-height: 44px; /* Android touch target size */
-            }
-            
-            .mobile-chat {
-                height: 100vh;
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-            }
-            
-            .mobile-chat-header {
-                flex-shrink: 0;
-                z-index: 100;
-            }
-            
-            .input-wrapper {
-                min-height: 48px;
-            }
-            
-            .send-btn {
-                min-width: 48px;
-                min-height: 48px;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Desktop Layout -->
@@ -333,7 +191,10 @@
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
+                <div class="input-info">
+                    <span id="mobile-char-count">0/500</span>
                 </div>
+            </div>
         </div>
     </div>
     
@@ -354,6 +215,11 @@
         </div>
     </div>
     
+    <!-- Scroll to bottom -->
+    <button id="scroll-bottom" class="scroll-bottom-btn" aria-label="Scroll to bottom">
+        <i class="fas fa-arrow-down"></i>
+    </button>
+
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>

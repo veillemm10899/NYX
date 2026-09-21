@@ -7,6 +7,21 @@ class SimpleCosmicRiver {
         this.currentUser = null;
         this.messages = [];
         this.onlineUsers = [];
+
+        // Themed Rivers (rooms)
+        this.rooms = [
+            { id: 'main', label: 'The Cosmic River', hue: 262, tag: 'Original waters' },
+            { id: 'night', label: 'The Night Shift', hue: 210, tag: 'Insomniacs only' },
+            { id: 'rant', label: 'Rant Garden', hue: 350, tag: 'Vent it out' },
+            { id: 'fiction', label: 'Fiction Current', hue: 45, tag: 'Stories & lies' }
+        ];
+        this.activeRoom = 'main';
+        this.hasRooms = false;
+
+        // The Weather (activity-driven ambience)
+        this.weatherScore = 0;
+        this.weatherLevel = -1;
+        this.weatherTimer = null;
         
         // UI elements
         this.messageContainer = null;
@@ -42,6 +57,10 @@ class SimpleCosmicRiver {
         // Initialize UI elements
         this.initializeElements();
         this.setupEventListeners();
+
+        // Rooms + Weather setup
+        await this.detectRoomSupport();
+        this.startWeather();
         
         // Set user online FIRST
         await this.setUserOnline(true);
@@ -67,6 +86,9 @@ class SimpleCosmicRiver {
         this.sendButton = document.getElementById('send-btn');
         this.onlineUsersContainer = document.getElementById('online-users');
         this.onlineCountElement = document.getElementById('online-count');
+        this.scrollToBottomBtn = document.getElementById('scroll-bottom');
+        this.roomBars = document.querySelectorAll('.room-bar');
+        this.weatherChips = document.querySelectorAll('.weather-chip');
         
         // Mobile elements
         this.mobileMessageContainer = document.getElementById('mobile-messages');
@@ -97,6 +119,28 @@ class SimpleCosmicRiver {
                     this.sendMessage(true);
                 }
             });
+        }
+
+        // Char counters
+        const desktopCounter = document.getElementById('char-count');
+        if (this.messageInput && desktopCounter) {
+            const updateDesktop = () => { desktopCounter.textContent = this.messageInput.value.length + '/500'; };
+            this.messageInput.addEventListener('input', updateDesktop);
+        }
+        const mobileCounter = document.getElementById('mobile-char-count');
+        if (this.mobileMessageInput && mobileCounter) {
+            const updateMobile = () => { mobileCounter.textContent = this.mobileMessageInput.value.length + '/500'; };
+            this.mobileMessageInput.addEventListener('input', updateMobile);
+        }
+
+        // Refresh buttons
+        const refreshDesktop = document.getElementById('refresh-chat');
+        if (refreshDesktop) {
+            refreshDesktop.addEventListener('click', () => this.refreshRiver());
+        }
+        const refreshMobile = document.getElementById('mobile-refresh-chat');
+        if (refreshMobile) {
+            refreshMobile.addEventListener('click', () => this.refreshRiver());
         }
         
         // Logout buttons
@@ -140,6 +184,28 @@ class SimpleCosmicRiver {
                 drawerBackdrop.classList.remove('active');
             });
         }
+
+        // Scroll to bottom button
+        if (this.scrollToBottomBtn) {
+            this.scrollToBottomBtn.addEventListener('click', () => this.scrollToBottom());
+        }
+        [this.messageContainer, this.mobileMessageContainer]
+            .filter(Boolean)
+            .forEach((el) => el.addEventListener('scroll', () => this.updateScrollButton(el)));
+    }
+
+    stringHue(key) {
+        let h = 2167;
+        const str = String(key || 'nyx');
+        for (let i = 0; i < str.length; i++) {
+            h = (h * 31 + str.charCodeAt(i)) >>> 0;
+        }
+        return h % 360;
+    }
+
+    avatarGradient(key) {
+        const h = this.stringHue(key);
+        return 'linear-gradient(135deg, hsl(' + h + ' 70% 62%), hsl(' + ((h + 45) % 360) + ' 72% 48%))';
     }
     
     async loadUserProfile() {
@@ -164,11 +230,15 @@ class SimpleCosmicRiver {
     
     async loadMessages() {
         try {
-            console.log('📥 Loading messages from The Cosmic River...');
+            console.log('📥 Loading messages from ' + (this.activeRoom === 'main' ? 'The Cosmic River' : this.getActiveRoom().label) + '...');
             
-            const { data: messages, error } = await this.supabase
+            let query = this.supabase
                 .from('messages')
-                .select('*')
+                .select('*');
+            if (this.hasRooms) {
+                query = query.eq('room', this.activeRoom);
+            }
+            const { data: messages, error } = await query
                 .order('created_at', { ascending: false })
                 .limit(50);
                 
@@ -181,7 +251,7 @@ class SimpleCosmicRiver {
             // Reverse to show oldest first, newest at bottom
             this.messages = (messages || []).reverse();
             this.renderMessages();
-            console.log('✅ Loaded ' + this.messages.length + ' messages from The Cosmic River');
+            console.log('✅ Loaded ' + this.messages.length + ' messages from the river');
         } catch (error) {
             console.error('❌ Error loading messages:', error);
             this.showError('Failed to load messages');
@@ -189,24 +259,10 @@ class SimpleCosmicRiver {
     }
     
     async joinTheRiver() {
-        try {
-            const nyxName = this.userProfile?.nyx_name || 'Unknown Nyx';
-            
-            // Simple direct insert - no functions, no triggers
-            await this.supabase
-                .from('messages')
-                .insert({
-                    sender_id: this.currentUser.id,
-                    sender_nyx_name: nyxName,
-                    sender_nyx_number: this.userProfile?.nyx_number || 0,
-                    message: `${nyxName} has entered The Cosmic River 🌊`,
-                    message_type: 'join'
-                });
-            
-            console.log('✅ Successfully joined The Cosmic River');
-        } catch (error) {
-            console.error('Error joining river:', error);
-        }
+        // Presence is now shown via the realtime subscription + toasts only.
+        // No DB write: previously every user opening/reloading the page wrote a
+        // 'join' row into `messages`, flooding the public feed for everyone.
+        console.log('✅ Presence set — no join message written to the river');
     }
     
     subscribeToMessages() {
@@ -225,12 +281,21 @@ class SimpleCosmicRiver {
                     
                     const newMessage = payload.new;
                     
+                    // Skip messages from other rooms (Themed Rivers)
+                    if (this.hasRooms) {
+                        const msgRoom = newMessage.room || 'main';
+                        if (msgRoom !== this.activeRoom) return;
+                    }
+                    
                     // Don't add our own message again (prevent duplicates)
                     if (newMessage.sender_id !== this.currentUser.id) {
                         // Add message to array and render
                         this.messages.push(newMessage);
                         this.renderMessage(newMessage);
                         this.scrollToBottom();
+                        
+                        // The river stirs
+                        this.pulseWeather(1);
                         
                         // Play notification sound for other users' messages
                         this.playNotificationSound();
@@ -277,11 +342,11 @@ class SimpleCosmicRiver {
                             const nyxName = newProfile.nyx_name || 'Unknown Nyx';
                             
                             if (newProfile.is_online) {
-                                this.showSystemMessage(`${nyxName} has entered The Cosmic River 🌊`);
+                                this.showPresenceToast(`${nyxName} entered The Cosmic River`);
                                 // Add to online users list
                                 this.addUserToOnlineList(newProfile);
                             } else {
-                                this.showSystemMessage(`${nyxName} has left The Cosmic River 🌊`);
+                                this.showPresenceToast(`${nyxName} left The Cosmic River`);
                                 // Remove from online users list
                                 this.removeUserFromOnlineList(newProfile.id);
                             }
@@ -343,10 +408,18 @@ class SimpleCosmicRiver {
         if (this.mobileMessageContainer) {
             this.mobileMessageContainer.innerHTML = '';
         }
-        
-        this.messages.forEach(message => {
-            this.renderMessage(message);
-        });
+
+        if (!this.messages.length) {
+            const empty = '<div class="chat-empty"><div class="chat-empty-mark"><i class="fas fa-feather-alt"></i></div><p class="chat-empty-title">The river is quiet</p><p class="chat-empty-sub">Say something — anyone can hear you.</p></div>';
+            this.messageContainer.innerHTML = empty;
+            if (this.mobileMessageContainer) {
+                this.mobileMessageContainer.innerHTML = empty;
+            }
+        } else {
+            this.messages.forEach(message => {
+                this.renderMessage(message);
+            });
+        }
         
         this.scrollToBottom();
         console.log('✅ Messages rendered successfully');
@@ -369,17 +442,19 @@ class SimpleCosmicRiver {
         
         if (message.message_type === 'system' || message.message_type === 'join') {
             messageDiv.className = 'message system-message';
-            messageDiv.innerHTML = '<div class="message-content">' + message.message + '</div>';
+            messageDiv.innerHTML = '<div class="message-content">' + this.escapeHtml(message.message) + '</div>';
         } else {
             const isOwnMessage = message.sender_id === this.currentUser.id;
             messageDiv.className = isOwnMessage ? 'message own-message' : 'message other-message';
             
             const avatarText = message.sender_nyx_name.replace('Nyx ', '');
+            const grad = this.avatarGradient(message.sender_id);
+            const senderColor = 'hsl(' + this.stringHue(message.sender_id) + ' 70% 78%)';
             
             if (isOwnMessage) {
-                messageDiv.innerHTML = '<div class="message-content"><div class="message-text">' + this.escapeHtml(message.message) + '</div><div class="message-time">' + this.formatTime(message.created_at) + '</span></div><div class="message-avatar">' + avatarText + '</div>';
+                messageDiv.innerHTML = '<div class="message-content"><div class="message-text">' + this.escapeHtml(message.message) + '</div><div class="message-time">' + this.formatTime(message.created_at) + '</div></div><div class="message-avatar" style="background:' + grad + '">' + avatarText + '</div>';
             } else {
-                messageDiv.innerHTML = '<div class="message-avatar">' + avatarText + '</div><div class="message-content"><div class="message-header"><span class="message-sender">' + message.sender_nyx_name + '</span><span class="message-time">' + this.formatTime(message.created_at) + '</span></div><div class="message-text">' + this.escapeHtml(message.message) + '</div></div>';
+                messageDiv.innerHTML = '<div class="message-avatar" style="background:' + grad + '">' + avatarText + '</div><div class="message-content"><div class="message-header"><span class="message-sender" style="color:' + senderColor + '">' + message.sender_nyx_name + '</span><span class="message-time">' + this.formatTime(message.created_at) + '</span></div><div class="message-text">' + this.escapeHtml(message.message) + '</div></div>';
             }
         }
         
@@ -401,7 +476,8 @@ class SimpleCosmicRiver {
             userElement.className = 'online-user';
             
             const avatarText = user.nyx_name.replace('Nyx ', '');
-            userElement.innerHTML = '<div class="user-avatar">' + avatarText + '</div><div class="user-info"><div class="user-name">' + user.nyx_name + '</div><div class="user-status">Crossing the cosmic river</div></div>';
+            const grad = this.avatarGradient(user.id || user.nyx_name);
+            userElement.innerHTML = '<div class="user-avatar" style="background:' + grad + '">' + avatarText + '</div><div class="user-info"><div class="user-name">' + user.nyx_name + '</div><div class="user-status">Drifting in the river</div></div>';
             
             container.appendChild(userElement);
         });
@@ -428,6 +504,104 @@ class SimpleCosmicRiver {
             this.renderOnlineUsers();
         }
     }
+
+    getActiveRoom() {
+        return this.rooms.find(r => r.id === this.activeRoom) || this.rooms[0];
+    }
+
+    // Detect whether the `room` column exists on the messages table.
+    // If it doesn't, the app behaves exactly like before (single river).
+    async detectRoomSupport() {
+        try {
+            const { error } = await this.supabase.from('messages').select('room').limit(0);
+            if (!error) {
+                this.hasRooms = true;
+            }
+        } catch (e) {
+            this.hasRooms = false;
+        }
+        if (this.hasRooms) {
+            this.buildRoomBar();
+        }
+        console.log('🏞️ Themed Rivers support:', this.hasRooms);
+    }
+
+    buildRoomBar() {
+        this.roomBars.forEach((bar) => {
+            bar.innerHTML = '';
+            const chips = document.createElement('div');
+            chips.className = 'room-bar-track';
+
+            this.rooms.forEach(room => {
+                const pill = document.createElement('button');
+                pill.className = 'room-pill';
+                pill.dataset.room = room.id;
+                pill.innerHTML = '<span class="room-pill-dot"></span><span class="room-pill-name">' + room.label + '</span>';
+                pill.addEventListener('click', () => this.setActiveRoom(room.id));
+                chips.appendChild(pill);
+            });
+
+            const tag = document.createElement('span');
+            tag.className = 'room-bar-tag';
+            tag.id = 'room-bar-tag';
+            chips.appendChild(tag);
+
+            bar.appendChild(chips);
+        });
+        this.applyRoomTheme();
+    }
+
+    applyRoomTheme() {
+        const room = this.getActiveRoom();
+        document.documentElement.style.setProperty('--room-hue', room.hue);
+        this.roomBars.forEach((bar) => {
+            bar.querySelectorAll('.room-pill').forEach(p => {
+                p.classList.toggle('active', p.dataset.room === this.activeRoom);
+            });
+            const tag = bar.querySelector('.room-bar-tag');
+            if (tag) tag.textContent = room.tag;
+        });
+    }
+
+    async setActiveRoom(roomId) {
+        if (roomId === this.activeRoom) return;
+        this.activeRoom = roomId;
+        this.messages = [];
+        this.applyRoomTheme();
+        await this.loadMessages();
+        this.scrollToBottom();
+    }
+
+    // --- The Weather ---
+    pulseWeather(amount) {
+        this.weatherScore = Math.min(20, this.weatherScore + (amount || 1));
+    }
+
+    startWeather() {
+        if (this.weatherTimer) return;
+        this.weatherTimer = setInterval(() => {
+            this.weatherScore *= 0.88;
+            if (this.weatherScore < 0.15) this.weatherScore = 0;
+            this.setWeatherLevel(Math.min(4, Math.floor(this.weatherScore / 5)));
+        }, 1400);
+    }
+
+    setWeatherLevel(level) {
+        if (this.weatherLevel === level) return;
+        this.weatherLevel = level;
+
+        document.querySelectorAll('.weather-layer').forEach(layer => {
+            layer.className = 'weather-layer weather-' + level;
+        });
+
+        const labels = ['Calm', 'Ripple', 'Flowing', 'Surge', 'Storm'];
+        document.querySelectorAll('.weather-label').forEach(label => {
+            label.textContent = labels[level];
+        });
+        this.weatherChips.forEach(chip => {
+            chip.className = 'weather-chip weather-' + level;
+        });
+    }
     
     async sendMessage(isMobile = false) {
         const input = isMobile ? this.mobileMessageInput : this.messageInput;
@@ -453,20 +627,25 @@ class SimpleCosmicRiver {
             this.scrollToBottom();
             
             // Simple direct insert - NO FUNCTIONS, NO TRIGGERS
+            const row = {
+                sender_id: this.currentUser.id,
+                sender_nyx_name: this.userProfile.nyx_name,
+                sender_nyx_number: this.userProfile.nyx_number,
+                message: text,
+                message_type: 'text'
+            };
+            if (this.hasRooms) {
+                row.room = this.activeRoom;
+            }
             const { error } = await this.supabase
                 .from('messages')
-                .insert({
-                    sender_id: this.currentUser.id,
-                    sender_nyx_name: this.userProfile.nyx_name,
-                    sender_nyx_number: this.userProfile.nyx_number,
-                    message: text,
-                    message_type: 'text'
-                });
+                .insert(row);
                 
             if (error) {
                 throw error;
             }
             
+            this.pulseWeather(1);
             input.value = '';
             console.log('✅ Message sent to The Cosmic River successfully');
             
@@ -488,6 +667,10 @@ class SimpleCosmicRiver {
             console.error('Error during logout:', error);
             window.location.href = 'login.html';
         }
+    }
+
+    async refreshRiver() {
+        await Promise.allSettled([this.loadMessages(), this.updateOnlineUsers()]);
     }
     
     hideLoading() {
@@ -528,6 +711,31 @@ class SimpleCosmicRiver {
         this.renderMessage(systemMessage);
         this.scrollToBottom();
     }
+
+    showPresenceToast(text) {
+        const container = document.getElementById('presence-toast');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'presence-toast-item';
+        toast.textContent = text;
+        container.appendChild(toast);
+
+        while (container.children.length > 3) {
+            container.firstChild.remove();
+        }
+
+        setTimeout(() => {
+            toast.classList.add('fade');
+            setTimeout(() => toast.remove(), 500);
+        }, 3500);
+    }
+
+    updateScrollButton(scrollEl) {
+        if (!this.scrollToBottomBtn) return;
+        const nearBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 300;
+        this.scrollToBottomBtn.classList.toggle('visible', !nearBottom);
+    }
     
     scrollToBottom() {
         setTimeout(() => {
@@ -548,6 +756,9 @@ class SimpleCosmicRiver {
             }
             if (mobileChatContainer) {
                 mobileChatContainer.scrollTop = mobileChatContainer.scrollHeight;
+            }
+            if (this.scrollToBottomBtn) {
+                this.scrollToBottomBtn.classList.remove('visible');
             }
         }, 200);
     }
