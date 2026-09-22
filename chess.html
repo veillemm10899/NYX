@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>NYX — CHESS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="chess.css" />
+</head>
+<body>
+    <main id="shell" class="shell">
+        <canvas id="fx-bg"></canvas>
+
+        <header class="top-bar">
+            <div class="brand">
+                <i class="fas fa-chess-knight"></i>
+                <div class="brand-text">
+                    <span class="brand-title">CHESS</span>
+                    <span class="brand-sub">checkmate the river</span>
+                </div>
+            </div>
+            <div class="top-actions">
+                <button id="mute-btn" class="top-btn" title="Sound">
+                    <i class="fas fa-volume-high"></i>
+                </button>
+                <a href="chat.html" class="top-btn top-link" title="Back to The River">
+                    <i class="fas fa-water"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- Mode splash -->
+        <section id="menu" class="menu">
+            <div class="menu-glyph"><i class="fas fa-chess"></i></div>
+            <h1 class="menu-title">CHESS</h1>
+            <p class="menu-sub">Full rules. Castles, en passant, promotion. Play the Tide or a stranger in the river.</p>
+            <div class="menu-btns">
+                <button id="play-ai" class="glow-btn glow-main">
+                    <i class="fas fa-spa"></i>
+                    <span class="glow-btn-txt">vs THE TIDE</span>
+                    <span class="glow-btn-tag">AI</span>
+                </button>
+                <button id="play-online" class="glow-btn ghost">
+                    <i class="fas fa-users"></i>
+                    <span class="glow-btn-txt">vs Online Player</span>
+                    <span class="glow-btn-tag">1v1</span>
+                </button>
+            </div>
+
+            <div id="online-panel" class="online-panel" hidden>
+                <div class="op-col">
+                    <div class="op-head"><i class="fas fa-paper-plane"></i> Challenges sent</div>
+                    <div id="out-list" class="op-list"></div>
+                </div>
+                <div class="op-col">
+                    <div class="op-head"><i class="fas fa-bell"></i> Incoming</div>
+                    <div id="inc-list" class="op-list"></div>
+                    <div class="op-head op-head-2"><i class="fas fa-user-friends"></i> Online in the river</div>
+                    <div id="online-list" class="op-list"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Match -->
+        <section id="match" class="match" hidden>
+            <div class="duel-head">
+                <div class="play-chip" id="chip-white">
+                    <span class="chip-avatar" id="white-avatar"></span>
+                    <span class="chip-name" id="white-name">You</span>
+                    <span class="chip-side chip-w"><i class="fas fa-chess-pawn"></i></span>
+                </div>
+                <div class="mid-label" id="mid-label">YOUR TURN</div>
+                <div class="play-chip flip" id="chip-black">
+                    <span class="chip-avatar" id="black-avatar"></span>
+                    <span class="chip-name" id="black-name">The Tide</span>
+                    <span class="chip-side chip-b"><i class="fas fa-chess-queen"></i></span>
+                </div>
+            </div>
+
+            <div id="board-wrap" class="board-wrap">
+                <div id="board" class="board"></div>
+            </div>
+
+            <div class="captured-row">
+                <div class="captured" id="captured-me"></div>
+                <div class="captured-sum" id="captured-sum">0</div>
+                <div class="captured" id="captured-opp"></div>
+            </div>
+
+            <div class="match-actions">
+                <button id="undo-btn" class="tab-btn"><i class="fas fa-rotate-left"></i> Undo</button>
+                <button id="flip-btn" class="tab-btn"><i class="fas fa-arrows-turn-to-dots"></i> Flip</button>
+                <button id="resign-btn" class="tab-btn tab-danger"><i class="fas fa-flag"></i> Resign</button>
+                <button id="leave-btn" class="tab-btn tab-danger"><i class="fas fa-right-from-bracket"></i> Leave</button>
+            </div>
+        </section>
+
+        <!-- Promotion chooser -->
+        <div id="promo" class="promo-overlay hidden">
+            <div class="promo-card">
+                <div class="promo-title">PROMOTE YOUR PAWN</div>
+                <div class="promo-choices">
+                    <button class="promo-btn" data-p="Q"><i>♛</i><span>Queen</span></button>
+                    <button class="promo-btn" data-p="R"><i>♜</i><span>Rook</span></button>
+                    <button class="promo-btn" data-p="B"><i>♝</i><span>Bishop</span></button>
+                    <button class="promo-btn" data-p="N"><i>♞</i><span>Knight</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game over -->
+        <div id="over" class="overlay hidden">
+            <div class="overlay-card">
+                <div class="res-glyph" id="res-glyph"><i class="fas fa-skull"></i></div>
+                <h2 class="res-title" id="res-title">CHECKMATE</h2>
+                <p class="res-sub" id="res-sub"></p>
+                <div class="res-actions">
+                    <button id="over-shout" class="go-btn go-broadcast">
+                        <i class="fas fa-water"></i>
+                        <span>Shout it to The River</span>
+                    </button>
+                    <button id="over-rematch" class="go-btn go-restart">
+                        <i class="fas fa-rotate-left"></i>
+                        <span>Rematch</span>
+                    </button>
+                    <button id="over-menu" class="go-btn go-restart">
+                        <i class="fas fa-house"></i>
+                        <span>Menu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Incoming challenge modal -->
+        <div id="chal-modal" class="overlay hidden">
+            <div class="overlay-card challenge-card">
+                <div class="chal-glyph"><i class="fas fa-chess-rook"></i></div>
+                <h2 class="res-title">CHECK CHALLENGE</h2>
+                <p class="res-sub"><b id="chal-name">Someone</b> summons you to the board.</p>
+                <div class="res-actions">
+                    <button id="chal-accept" class="go-btn go-broadcast">
+                        <i class="fas fa-check"></i>
+                        <span>Accept</span>
+                    </button>
+                    <button id="chal-decline" class="go-btn go-restart">
+                        <i class="fas fa-xmark"></i>
+                        <span>Decline</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="toast"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="chess.js"></script>
+</body>
+</html>

@@ -313,6 +313,91 @@ body {
     color: var(--ink);
 }
 
+/* --- River Hall of Fame --- */
+.hall {
+    margin: 0 0 22px;
+    padding: 12px 16px 10px;
+    border-radius: 14px;
+    background: rgba(139, 92, 246, 0.06);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.hall[hidden] {
+    display: none;
+}
+
+.hall-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    margin-bottom: 8px;
+}
+
+.hall-title i {
+    font-size: 0.7rem;
+    filter: drop-shadow(0 0 8px rgba(226, 182, 255, 0.9));
+}
+
+.hall-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.hall-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    font-size: 0.8rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.hall-rank {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--bg);
+    background: var(--ink);
+}
+
+.hall-rank:nth-child(1) {
+    background: #f5d76e;
+}
+
+.hall-name {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-dim);
+}
+
+.hall-score {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 480px) {
     .brand-sub {
         display: none;

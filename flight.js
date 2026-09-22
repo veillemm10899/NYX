@@ -24,6 +24,7 @@
     const $ = (id) => document.getElementById(id);
 
     let supabase = null, currentUser = null, profile = null, hasRooms = false;
+    let hasScores = false;
     let canvas = null, ctx = null, W = 0, H = 0, dpr = 1, groundY = 0;
     let spiritX = 0;
 
@@ -32,6 +33,7 @@
     let gates = [], stars = [], effects = [];
     let time = 0, lastFrame = 0, flash = 0, spawnAt = 0, settleTimer = 0;
     let dead = false, overlayShown = false;
+    let hallChannel = null;
 
     let muted = localStorage.getItem('nyx_muted') === '1';
     let audioCtx = null;
@@ -170,12 +172,14 @@
             localStorage.setItem('nyx_flight_best', String(best));
         }
         timelineDie = bumped;
+        if (hasScores && bumped && score > 0) syncScore();
         setTimeout(() => {
             el.goGates.textContent = score;
             el.goScore.textContent = score;
             el.goBest.textContent = best;
             el.gameover.classList.remove('hidden');
             overlayShown = true;
+            if (hasScores) loadHall();
             tryShout();
         }, 520);
     }
@@ -228,6 +232,75 @@
 
     function tryShout() {
         if (Date.now() - lastShout.at >= SHOUT_COOLDOWN) shoutToRiver();
+    }
+
+    /* ---- Hall of Fame ---- */
+    async function syncScore() {
+        try {
+            const { data: row } = await supabase
+                .from('scores')
+                .select('id, score')
+                .eq('user_id', currentUser.id)
+                .eq('game', 'flight')
+                .maybeSingle();
+            if (row && score <= row.score) return;
+            if (row) {
+                await supabase.from('scores')
+                    .update({ score, gates: score })
+                    .eq('id', row.id);
+            } else {
+                await supabase.from('scores')
+                    .insert({
+                        user_id: currentUser.id,
+                        nyx_name: profile ? profile.nyx_name : 'Unknown Nyx',
+                        game: 'flight',
+                        score,
+                        gates: score
+                    });
+            }
+        } catch (err) {
+            console.error('Score sync failed:', err);
+        }
+    }
+
+    async function loadHall() {
+        if (!el.hall) return;
+        try {
+            const { data, error } = await supabase
+                .from('scores')
+                .select('nyx_name, score, gates')
+                .eq('game', 'flight')
+                .order('score', { ascending: false })
+                .limit(5);
+            if (error) throw error;
+            if (!data || data.length === 0) {
+                el.hall.hidden = true;
+                return;
+            }
+            el.hall.hidden = false;
+            el.hallList.innerHTML = data.map((r, i) =>
+                '<li><span class="hall-rank">' + (i + 1) + '</span>' +
+                '<span class="hall-name">' + escapeHtml(r.nyx_name) + '</span>' +
+                '<span class="hall-score">' + r.score + '</span></li>'
+            ).join('');
+        } catch (err) {
+            console.error('Hall load failed:', err);
+            el.hall.hidden = true;
+        }
+    }
+
+    function subscribeHall() {
+        hallChannel = supabase.channel('scores-flight')
+            .on('postgres_changes', {
+                event: '*', schema: 'public', table: 'scores', filter: 'game=eq.flight'
+            }, () => loadHall())
+            .subscribe();
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
     }
 
     function toast(msg) {
@@ -510,6 +583,9 @@
         const { error: colErr } = await supabase.from('messages').select('room').limit(0);
         hasRooms = !colErr;
 
+        const { error: scoresErr } = await supabase.from('scores').select('id').limit(0);
+        hasScores = !scoresErr;
+
         el.shell = $('shell');
         canvas = $('game-canvas');
         ctx = canvas.getContext('2d');
@@ -521,6 +597,13 @@
         el.restartBtn = $('restart-btn');
         el.muteBtn = $('mute-btn');
         el.toast = $('toast');
+        el.hall = $('hall');
+        el.hallList = $('hall-list');
+
+        if (hasScores) {
+            loadHall();
+            subscribeHall();
+        }
 
         best = parseInt(localStorage.getItem('nyx_flight_best') || '0', 10) || 0;
         updateMuteIcon();
