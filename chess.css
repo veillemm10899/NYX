@@ -19,7 +19,7 @@
 
 html, body {
     height: 100%;
-    overflow: hidden;
+    overflow: auto;
     background: var(--bg);
     color: var(--text);
     font-family: 'Inter', system-ui, sans-serif;
@@ -27,7 +27,8 @@ html, body {
 
 .shell {
     position: relative;
-    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -766,8 +767,7 @@ html, body {
 
 /* desktop: bigger board, room to scroll, hover feedback */
 @media (min-width: 768px) and (min-height: 560px) {
-    html, body { overflow: auto; }
-    .shell { height: auto; min-height: 100dvh; }
+    .shell { min-height: 100vh; }
     .menu { flex: none; }
     .match { flex: none; justify-content: center; padding: 18px 0 40px; }
     .menu-title { font-size: 2.7rem; }

@@ -603,13 +603,17 @@
     }
 
     function fitBoard() {
-        const vw = window.innerWidth, vh = window.innerHeight;
+        const w = window;
+        const vw = w.innerWidth;
+        const vh = (w.visualViewport && w.visualViewport.height) || w.innerHeight;
+        const isDesktop = vw >= 768 && vh >= 560;
         let px;
-        if (vw >= 768) {
+        if (isDesktop) {
             px = Math.max(360, Math.min(vw * 0.94, vh - 380, 760));
         } else {
-            px = Math.max(200, Math.min(vw * 0.94, vh - 300, 560));
+            px = Math.max(200, Math.min(vw * 0.94, vh - 260, 560));
         }
+        px = Math.min(px, vw - 20);
         document.documentElement.style.setProperty('--bsize', px + 'px');
     }
 
@@ -1212,8 +1216,18 @@
         if (!list.length) el.onlineList.innerHTML = '<p class="op-empty">No one is drifting right now.</p>';
     }
 
+    async function probeOnline() {
+        try {
+            const { error } = await supabase.from('challenges').select('id').limit(0);
+            hasChallenges = !error;
+        } catch (e) {
+            hasChallenges = false;
+        }
+        return hasChallenges;
+    }
+
     async function sendChallenge(target) {
-        if (!hasChallenges) { toast('Challenges are off — run the SQL first.'); return; }
+        if (!(await probeOnline())) { toast('Challenges are off — run the SQL first.'); return; }
         const { data, error } = await supabase.from('challenges').insert({
             challenger_id: currentUser.id,
             challenger_name: profile ? profile.nyx_name : 'Unknown Nyx',
@@ -1370,9 +1384,9 @@
         el.waitText = $('wait-text');
 
         el.playAi.addEventListener('click', () => { ensureAudio(); startAiMatch(); });
-        el.playOnline.addEventListener('click', () => {
+        el.playOnline.addEventListener('click', async () => {
             ensureAudio();
-            if (!hasChallenges) {
+            if (!(await probeOnline())) {
                 toast('Challenges are off — run the Chess SQL in Supabase first.');
                 return;
             }
@@ -1423,6 +1437,11 @@
 
         window.addEventListener('resize', fitBoard);
         window.addEventListener('orientationchange', () => setTimeout(fitBoard, 180));
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', fitBoard);
+            window.visualViewport.addEventListener('scroll', fitBoard);
+        }
+        addEventListener('load', () => setTimeout(fitBoard, 80));
 
         window.addEventListener('beforeunload', () => {
             if (st.channel) { try { st.channel.unsubscribe(); } catch (e) {} }
@@ -1495,6 +1514,12 @@
         } else {
             el.playOnline.classList.add('pending');
             el.playOnline.querySelector('.glow-btn-tag').textContent = 'SETUP';
+            setTimeout(async () => {
+                if (await probeOnline()) {
+                    el.playOnline.classList.remove('pending');
+                    el.playOnline.querySelector('.glow-btn-tag').textContent = '1v1';
+                }
+            }, 3000);
         }
 
         if (deepLink) {
