@@ -1153,11 +1153,28 @@
         const [outRes, incRes, playersRes] = await Promise.all([
             supabase.from('challenges').select('*').eq('challenger_id', currentUser.id).order('created_at', { ascending: false }).limit(12),
             supabase.from('challenges').select('*').eq('target_id', currentUser.id).order('created_at', { ascending: false }).limit(12),
-            supabase.rpc('get_all_profiles')
+            listOnlineProfiles()
         ]);
         renderOut(outRes.data || []);
         renderInc(incRes.data || []);
-        renderOnline((playersRes.data || []).filter(p => p.is_online && p.id !== currentUser.id));
+        renderOnline(playersRes);
+    }
+
+    async function listOnlineProfiles() {
+        try {
+            const { data, error } = await supabase.rpc('get_all_profiles');
+            if (error) throw error;
+            return (data || []).filter(p => p.is_online && p.id !== currentUser.id);
+        } catch (e) {
+            try {
+                const { data, error } = await supabase.from('profiles')
+                    .select('id, nyx_name')
+                    .eq('is_online', true)
+                    .neq('id', currentUser.id);
+                if (!error && data) return data;
+            } catch (e2) {}
+            return [];
+        }
     }
 
     function renderOut(list) {
@@ -1342,6 +1359,14 @@
     }
 
     /* --- bind --- */
+    async function setOnline(online) {
+        try {
+            await supabase.rpc('update_online_status', { user_id: currentUser.id, online_status: online });
+        } catch (e) {
+            await supabase.from('profiles').update({ is_online: online }).eq('id', currentUser.id);
+        }
+    }
+
     function bind() {
         el.fxBg = $('fx-bg');
         el.muteBtn = $('mute-btn');
@@ -1446,7 +1471,7 @@
         window.addEventListener('beforeunload', () => {
             if (st.channel) { try { st.channel.unsubscribe(); } catch (e) {} }
             if (currentUser) {
-                try { supabase.from('profiles').update({ is_online: false }).eq('id', currentUser.id); } catch (e) {}
+                try { setOnline(false); } catch (e) {}
             }
         });
     }
@@ -1505,7 +1530,7 @@
         render();
         renderCaptured();
 
-        try { await supabase.from('profiles').update({ is_online: true }).eq('id', currentUser.id); } catch (e) {}
+        try { await setOnline(true); } catch (e) {}
 
         if (hasChallenges) {
             subscribeChallenges();
