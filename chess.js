@@ -1161,19 +1161,24 @@
     }
 
     async function listOnlineProfiles() {
-        try {
-            const { data, error } = await supabase.rpc('get_all_profiles');
+        const direct = async () => {
+            const { data, error } = await supabase.from('profiles')
+                .select('id, nyx_name')
+                .eq('is_online', true)
+                .neq('id', currentUser.id);
             if (error) throw error;
-            return (data || []).filter(p => p.is_online && p.id !== currentUser.id);
+            return data || [];
+        };
+        try {
+            return await direct();
         } catch (e) {
             try {
-                const { data, error } = await supabase.from('profiles')
-                    .select('id, nyx_name')
-                    .eq('is_online', true)
-                    .neq('id', currentUser.id);
-                if (!error && data) return data;
-            } catch (e2) {}
-            return [];
+                const { data, error } = await supabase.rpc('get_all_profiles');
+                if (error) throw error;
+                return (data || []).filter(p => p.is_online && p.id !== currentUser.id);
+            } catch (e2) {
+                return [];
+            }
         }
     }
 
