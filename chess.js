@@ -1149,21 +1149,20 @@
 
     /* --- challenges --- */
     async function refreshLists() {
-        if (!hasChallenges) return;
         const [outRes, incRes, playersRes] = await Promise.all([
             supabase.from('challenges').select('*').eq('challenger_id', currentUser.id).order('created_at', { ascending: false }).limit(12),
             supabase.from('challenges').select('*').eq('target_id', currentUser.id).order('created_at', { ascending: false }).limit(12),
             listOnlineProfiles()
         ]);
-        renderOut(outRes.data || []);
-        renderInc(incRes.data || []);
-        renderOnline(playersRes);
+        try { renderOut(outRes.data || []); } catch (e) {}
+        try { renderInc(incRes.data || []); } catch (e) {}
+        try { renderOnline(playersRes); } catch (e) {}
     }
 
     async function listOnlineProfiles() {
         const direct = async () => {
             const { data, error } = await supabase.from('profiles')
-                .select('id, nyx_name')
+                .select('id, nyx_name, last_seen')
                 .eq('is_online', true)
                 .neq('id', currentUser.id);
             if (error) throw error;
@@ -1356,6 +1355,26 @@
         ch.subscribe();
     }
 
+    function subscribeOnlineRoster() {
+        const pc = supabase
+            .channel('roster-' + currentUser.id)
+            .on('postgres_changes', {
+                event: '*', schema: 'public', table: 'profiles'
+            }, () => {
+                if (!el.onlinePanel.hidden) refreshLists();
+            })
+            .subscribe();
+        if (window.__rosterSubs) window.__rosterSubs.push(pc);
+        else window.__rosterSubs = [pc];
+    }
+
+    function startRosterPoll() {
+        if (window.__rosterPoll) return;
+        window.__rosterPoll = setInterval(() => {
+            if (!st.channel && !el.onlinePanel.hidden) refreshLists();
+        }, 8000);
+    }
+
     /* --- audio toggle --- */
     function toggleMute() {
         muted = !muted;
@@ -1421,7 +1440,7 @@
                 return;
             }
             el.onlinePanel.hidden = !el.onlinePanel.hidden;
-            if (!el.onlinePanel.hidden) refreshLists();
+            if (!el.onlinePanel.hidden) { refreshLists(); startRosterPoll(); }
         });
         el.muteBtn.addEventListener('click', toggleMute);
         el.resignBtn.addEventListener('click', () => {
@@ -1548,9 +1567,13 @@
                 if (await probeOnline()) {
                     el.playOnline.classList.remove('pending');
                     el.playOnline.querySelector('.glow-btn-tag').textContent = '1v1';
+                    subscribeChallenges();
+                    refreshLists();
                 }
             }, 3000);
         }
+        subscribeOnlineRoster();
+        setTimeout(refreshLists, 1500);
 
         if (deepLink) {
             startOnlineMatch(mid, side);
