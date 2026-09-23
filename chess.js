@@ -465,9 +465,11 @@
         matchId: null,
         pendingPromo: null,
         waitChalId: null,
+        waitWatcher: null,
         pendingChal: null,
         oppName: null,
-        moveLog: []
+        moveLog: [],
+        rematch: null
     };
 
     const el = {};
@@ -600,6 +602,22 @@
         el.sqEls = Array.prototype.slice.call(board.children);
     }
 
+    function fitBoard() {
+        const vw = window.innerWidth, vh = window.innerHeight;
+        let px;
+        if (vw >= 768) {
+            px = Math.max(360, Math.min(vw * 0.94, vh - 380, 760));
+        } else {
+            px = Math.max(200, Math.min(vw * 0.94, vh - 300, 560));
+        }
+        document.documentElement.style.setProperty('--bsize', px + 'px');
+    }
+
+    function scrollToBoard() {
+        if (!el.match || el.match.hidden) return;
+        try { el.match.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { el.match.scrollIntoView(); }
+    }
+
     function render() {
         const game = st.game;
         for (const e of el.sqEls) {
@@ -704,6 +722,9 @@
         el.blackAvatar.textContent = avatarText(names.black);
         el.whiteAvatar.style.background = gradFor(names.white);
         el.blackAvatar.style.background = gradFor(names.black);
+        el['chipWhite'].style.order = st.orientation === 'w' ? 0 : 2;
+        el['chipBlack'].style.order = st.orientation === 'w' ? 2 : 0;
+        el.midLabel.style.order = 1;
         updateTurnChip();
     }
 
@@ -784,7 +805,7 @@
 
     function sendIfOnline(m) {
         if (st.mode === 'online' && st.channel) {
-            st.channel.send({ type: 'broadcast', event: 'mv', payload: { f: m.f, t: m.t, flag: m.flag || 0, promo: m.promo || null } });
+            st.channel.send({ type: 'broadcast', event: 'mv', payload: { f: m.f, t: m.t, flag: m.flag || 0, promo: m.promo ? pieceType(m.promo) : null } });
         }
     }
 
@@ -823,7 +844,7 @@
         if (st.over) return;
         const list = legalMoves(st.game).filter(x =>
             x.f === m.f && x.t === m.t &&
-            (m.promo ? (x.promo && pieceType(x.promo) === m.promo) : !x.promo));
+            (m.promo ? (x.promo && pieceType(x.promo) === pieceType(m.promo)) : !x.promo));
         if (!list.length) {
             toast('Move mismatch — syncing.');
             return;
@@ -905,7 +926,10 @@
         el.resTitle.textContent = title;
         el.resSub.textContent = sub;
         el.overShout.hidden = kind === 'opp-left';
-        el.overRematch.hidden = !(st.mode === 'ai');
+        el.overRematch.hidden = kind === 'opp-left';
+        st.rematch = null;
+        el.overRematch.disabled = false;
+        el.overRematch.querySelector('span').textContent = 'Rematch';
         el.overMenu.hidden = false;
         el.overMenu.querySelector('span').textContent = 'Menu';
         extraOverFor(kind, winner);
@@ -995,34 +1019,8 @@
 
     /* --- controls --- */
     function rebuildBoardControls() {
-        el.undoBtn.hidden = st.mode !== 'ai';
         el.resignBtn.hidden = st.mode !== 'online';
         el.leaveBtn.hidden = st.mode !== 'online';
-    }
-
-    function flipBoard() {
-        st.orientation = st.orientation === 'w' ? 'b' : 'w';
-        render();
-        refreshChips();
-    }
-
-    function undoMove() {
-        if (st.mode !== 'ai' || st.over) return;
-        if (!st.moveLog.length) return;
-        const n = st.moveLog.length >= 2 ? 2 : 1;
-        const replay = st.moveLog.slice(0, st.moveLog.length - n);
-        let g = newGame();
-        for (const mv of replay) g = makeMove(g, mv);
-        st.game = g;
-        st.moveLog = replay;
-        st.selected = null;
-        st.legal = [];
-        st.lastMove = replay.length ? replay[replay.length - 1] : null;
-        st.aiThinking = false;
-        render();
-        renderCaptured();
-        refreshChips();
-        midLabel('YOUR TURN', true);
     }
 
     function resetBoardFor(side) {
@@ -1033,6 +1031,36 @@
         st.legal = [];
         st.lastMove = null;
         st.mySide = side;
+        st.orientation = side;
+    }
+
+    function startRematch() {
+        if (st.mode === 'online') {
+            const side = st.mySide === 'w' ? 'b' : 'w';
+            resetBoardFor(side);
+            st.rematch = null;
+            el.overRematch.disabled = false;
+            el.overRematch.querySelector('span').textContent = 'Rematch';
+            el.over.classList.add('hidden');
+            rebuildBoardControls();
+            buildBoard();
+            fitBoard();
+            refreshChips();
+            render();
+            renderCaptured();
+            midLabel(side === 'w' ? 'YOUR TURN' : 'WAITING FOR WHITE...', side === 'w');
+            scrollToBoard();
+            return;
+        }
+        resetBoardFor('w');
+        el.over.classList.add('hidden');
+        buildBoard();
+        fitBoard();
+        refreshChips();
+        render();
+        renderCaptured();
+        midLabel('YOUR TURN', true);
+        scrollToBoard();
     }
 
     /* --- modes --- */
@@ -1048,10 +1076,12 @@
         el.promo.classList.add('hidden');
         rebuildBoardControls();
         buildBoard();
+        fitBoard();
         refreshChips();
         render();
         renderCaptured();
         midLabel('YOUR TURN', true);
+        setTimeout(scrollToBoard, 60);
     }
 
     async function startOnlineMatch(id, side) {
@@ -1064,8 +1094,10 @@
         el.match.hidden = false;
         el.over.classList.add('hidden');
         el.promo.classList.add('hidden');
+        el.waitBanner.hidden = true;
         rebuildBoardControls();
         buildBoard();
+        fitBoard();
 
         const { data: row } = await supabase.from('challenges')
             .select('challenger_name,target_name')
@@ -1088,6 +1120,16 @@
         ch.on('broadcast', { event: 'bye' }, () => {
             if (!st.over) finishGame('opp-left', null);
         });
+        ch.on('broadcast', { event: 'rematch' }, () => {
+            if (!st.over) return;
+            if (st.rematch === 'asked') {
+                startRematch();
+            } else {
+                st.rematch = 'asked';
+                el.overRematch.querySelector('span').textContent = 'Rematch';
+                toast('Rival wants a rematch. Colors swap.');
+            }
+        });
         ch.on('presence', { event: 'sync' }, () => {
             const n = Object.keys(ch.presenceState() || {}).length;
             if (seenPresence >= 2 && n < 2 && !st.over) finishGame('opp-left', null);
@@ -1098,6 +1140,7 @@
                 try { await ch.track({ in: true }); } catch (e) {}
             }
         });
+        setTimeout(scrollToBoard, 60);
     }
 
     /* --- challenges --- */
@@ -1193,21 +1236,45 @@
 
     function startWaiting(name, id) {
         st.waitChalId = id;
-        el.resGlyph.innerHTML = '<i class="fas fa-hourglass-half"></i>';
-        el.resTitle.textContent = 'CHALLENGE SENT';
-        el.resSub.textContent = 'Waiting for ' + name + ' to accept the board...';
-        el.overShout.hidden = true;
-        el.overRematch.hidden = true;
-        el.overMenu.hidden = false;
-        el.overMenu.querySelector('span').textContent = 'Cancel';
-        el.over.classList.remove('hidden');
+        el.waitText.textContent = 'Waiting for ' + name + ' to accept the board...';
+        el.waitBanner.hidden = false;
+        watchChallenge(id);
     }
 
-    async function cancelWaiting() {
+    async function watchChallenge(id) {
+        if (st.waitWatcher) clearInterval(st.waitWatcher);
+        st.waitWatcher = setInterval(async () => {
+            if (!st.waitChalId || st.waitChalId !== id) { clearInterval(st.waitWatcher); st.waitWatcher = null; return; }
+            try {
+                const { data } = await supabase.from('challenges').select('status').eq('id', id).single();
+                if (!data) {
+                    clearInterval(st.waitWatcher); st.waitWatcher = null;
+                    st.waitChalId = null;
+                    el.waitBanner.hidden = true;
+                    refreshLists();
+                } else if (data.status === 'accepted') {
+                    clearInterval(st.waitWatcher); st.waitWatcher = null;
+                    st.waitChalId = null;
+                    el.waitBanner.hidden = true;
+                    startOnlineMatch(id, 'w');
+                } else if (data.status === 'declined' || data.status === 'cancelled') {
+                    clearInterval(st.waitWatcher); st.waitWatcher = null;
+                    st.waitChalId = null;
+                    el.waitBanner.hidden = true;
+                    toast('Your challenge was declined.');
+                    refreshLists();
+                }
+            } catch (e) {}
+        }, 2000);
+    }
+
+    function cancelWaiting() {
         if (!st.waitChalId) return;
-        try { await supabase.from('challenges').delete().eq('id', st.waitChalId); } catch (e) {}
+        const id = st.waitChalId;
+        if (st.waitWatcher) { clearInterval(st.waitWatcher); st.waitWatcher = null; }
+        supabase.from('challenges').delete().eq('id', id).then(() => {}).catch(() => {});
         st.waitChalId = null;
-        el.over.classList.add('hidden');
+        el.waitBanner.hidden = true;
         refreshLists();
     }
 
@@ -1234,6 +1301,8 @@
             refreshLists();
             if (c.status === 'accepted' && !st.channel) {
                 st.waitChalId = null;
+                if (st.waitWatcher) { clearInterval(st.waitWatcher); st.waitWatcher = null; }
+                el.waitBanner.hidden = true;
                 el.over.classList.add('hidden');
                 startOnlineMatch(c.id, 'w');
             }
@@ -1241,7 +1310,11 @@
         ch.on('postgres_changes', {
             event: 'delete', schema: 'public', table: 'challenges', filter: 'challenger_id=eq.' + currentUser.id
         }, () => {
-            if (st.waitChalId) { st.waitChalId = null; el.over.classList.add('hidden'); }
+            if (st.waitChalId) {
+                st.waitChalId = null;
+                if (st.waitWatcher) { clearInterval(st.waitWatcher); st.waitWatcher = null; }
+                el.waitBanner.hidden = true;
+            }
             refreshLists();
         });
         ch.subscribe();
@@ -1277,8 +1350,6 @@
         el.capturedMe = $('captured-me');
         el.capturedOpp = $('captured-opp');
         el.capturedSum = $('captured-sum');
-        el.undoBtn = $('undo-btn');
-        el.flipBtn = $('flip-btn');
         el.resignBtn = $('resign-btn');
         el.leaveBtn = $('leave-btn');
         el.promo = $('promo');
@@ -1295,6 +1366,9 @@
         el.chalDecline = $('chal-decline');
         el.toast = $('toast');
 
+        el.waitBanner = $('wait-banner');
+        el.waitText = $('wait-text');
+
         el.playAi.addEventListener('click', () => { ensureAudio(); startAiMatch(); });
         el.playOnline.addEventListener('click', () => {
             ensureAudio();
@@ -1306,8 +1380,6 @@
             if (!el.onlinePanel.hidden) refreshLists();
         });
         el.muteBtn.addEventListener('click', toggleMute);
-        el.flipBtn.addEventListener('click', flipBoard);
-        el.undoBtn.addEventListener('click', undoMove);
         el.resignBtn.addEventListener('click', () => {
             if (st.mode !== 'online' || !st.channel) return;
             const side = st.mySide;
@@ -1320,12 +1392,25 @@
         });
         el.overShout.addEventListener('click', () => shoutToRiver());
         el.overRematch.addEventListener('click', () => {
-            if (st.mode === 'ai') { resetBoardFor('w'); st.orientation = 'w'; el.over.classList.add('hidden'); buildBoard(); refreshChips(); render(); renderCaptured(); midLabel('YOUR TURN', true); }
+            if (st.mode !== 'online') {
+                if (st.mode === 'ai') { startRematch(); return; }
+                return;
+            }
+            if (!st.channel || !st.over) return;
+            st.channel.send({ type: 'broadcast', event: 'rematch', payload: { side: st.mySide } });
+            if (st.rematch === 'asked') {
+                startRematch();
+            } else {
+                st.rematch = 'asked';
+                el.overRematch.querySelector('span').textContent = 'Waiting for rival...';
+                el.overRematch.disabled = true;
+            }
         });
         el.overMenu.addEventListener('click', () => {
             if (st.waitChalId) { cancelWaiting(); return; }
             goHome();
         });
+        el.waitCancel.addEventListener('click', () => cancelWaiting());
         el.chalAccept.addEventListener('click', () => {
             if (st.pendingChal) respondChallenge(st.pendingChal, 'accepted');
         });
@@ -1335,6 +1420,9 @@
         document.querySelectorAll('.promo-btn').forEach(b => {
             b.addEventListener('click', () => choosePromo(b.dataset.p));
         });
+
+        window.addEventListener('resize', fitBoard);
+        window.addEventListener('orientationchange', () => setTimeout(fitBoard, 180));
 
         window.addEventListener('beforeunload', () => {
             if (st.channel) { try { st.channel.unsubscribe(); } catch (e) {} }
@@ -1346,10 +1434,12 @@
 
     function goHome() {
         if (st.channel) { try { st.channel.unsubscribe(); } catch (e) {} st.channel = null; }
+        if (st.waitWatcher) { clearInterval(st.waitWatcher); st.waitWatcher = null; }
         st.mode = null;
         st.waitChalId = null;
         el.match.hidden = true;
         el.over.classList.add('hidden');
+        el.waitBanner.hidden = true;
         el.chalModal.classList.add('hidden');
         el.menu.hidden = false;
         el.onlinePanel.hidden = true;
@@ -1359,6 +1449,20 @@
     /* --- boot --- */
     async function boot() {
         supabase = window.supabaseConfig.supabaseClient;
+
+        const params = new URLSearchParams(window.location.search);
+        const mid = params.get('m');
+        const side = params.get('s');
+        const deepLink = !!(mid && (side === 'w' || side === 'b'));
+
+        bind();
+        if (deepLink) {
+            el.menu.hidden = true;
+            el.onlinePanel.hidden = true;
+            el.match.hidden = false;
+            setTimeout(scrollToBoard, 40);
+        }
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { window.location.href = 'login.html'; return; }
         currentUser = user;
@@ -1375,9 +1479,9 @@
         const { error: chalErr } = await supabase.from('challenges').select('id').limit(0);
         hasChallenges = !chalErr;
 
-        bind();
         bgLoop();
         buildBoard();
+        fitBoard();
         refreshChips();
         render();
         renderCaptured();
@@ -1393,10 +1497,7 @@
             el.playOnline.querySelector('.glow-btn-tag').textContent = 'SETUP';
         }
 
-        const params = new URLSearchParams(window.location.search);
-        const mid = params.get('m');
-        const side = params.get('s');
-        if (mid && (side === 'w' || side === 'b')) {
+        if (deepLink) {
             startOnlineMatch(mid, side);
         }
     }

@@ -62,6 +62,12 @@
                     <div id="online-list" class="op-list"></div>
                 </div>
             </div>
+
+            <div id="wait-banner" class="wait-banner" hidden>
+                <i class="fas fa-hourglass-half"></i>
+                <span id="wait-text">Waiting for them to accept the board...</span>
+                <button id="wait-cancel" class="op-btn wait-cancel">Cancel</button>
+            </div>
         </section>
 
         <!-- Match -->
@@ -91,8 +97,6 @@
             </div>
 
             <div class="match-actions">
-                <button id="undo-btn" class="tab-btn"><i class="fas fa-rotate-left"></i> Undo</button>
-                <button id="flip-btn" class="tab-btn"><i class="fas fa-arrows-turn-to-dots"></i> Flip</button>
                 <button id="resign-btn" class="tab-btn tab-danger"><i class="fas fa-flag"></i> Resign</button>
                 <button id="leave-btn" class="tab-btn tab-danger"><i class="fas fa-right-from-bracket"></i> Leave</button>
             </div>
